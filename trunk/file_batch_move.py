@@ -19,6 +19,8 @@ from sets import Set
 class file_batch_move:
 	def __init__(self, srcdir, dstdir, list_file):
 		self.srcdir = srcdir
+		if not os.path.isdir(dst_dir):
+			os.makedirs(dst_dir)
 		self.dstdir = dstdir
 		self.list_f = csv.reader(file(list_file))
 		self.files_to_move = Set()
