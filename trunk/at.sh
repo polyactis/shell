@@ -10,7 +10,7 @@ date
 #echo "microarraydb dumped to /usr/local/src/zip/microarraydb"
 #while [ 0 == 0 ] ;do
 #	ps -ef >/tmp/0
-#	grep dm_probeset1 /tmp/0
+#	grep dm_probeset1 /tmp/0 >/dev/null
 #	if [ $? == 1 ]; then
 #		break
 #	fi
