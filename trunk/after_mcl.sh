@@ -16,9 +16,6 @@ echo "Done"
 echo "Second stage pruning"
 ~/script/annot/bin/cluster_prune.py -k $schema -c -p 1 -t $mcl_table
 echo "Done"
-echo "Third stage pruning"
-~/script/annot/bin/cluster_prune.py -k $schema -c -p 2 -s $mcl_table -t $mcl_table2
-echo "Done"
 echo "mcl_result_stat"
 ~/script/annot/bin/mcl_result_stat.py -k $schema -c -t $mcl_table
 echo "Done"
@@ -30,6 +27,9 @@ echo "cluster_stat "
 echo "Done"
 echo "gene_stat"
 ~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table -m $mcl_table
+echo "Done"
+echo "Third stage pruning"
+~/script/annot/bin/cluster_prune.py -k $schema -c -p 2 -s $mcl_table -t $mcl_table2
 echo "Done"
 echo "mcl_result_stat2"
 ~/script/annot/bin/mcl_result_stat.py -k $schema -c -t $mcl_table2
