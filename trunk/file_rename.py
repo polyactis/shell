@@ -4,7 +4,7 @@ Usage: file_rename.py -m MAPPING_FILE -s CHOICE [OPTION] DIR
 
 Option:
 	DIR is the directory which contains the files to be renamed.
-	-g ..., --organism=...	two letter organism abbreviation
+	-p ..., --prefix=...	prefix needed for choice 4 renaming
 	-s ..., --choice=...	which type of renaming rule.
 	-m ..., --mapping_file==...	1st column is the old fname, 2nd is the new fname
 	-h, --help              show this help
@@ -12,7 +12,7 @@ Option:
 Examples:
 	file_rename.py -s 1 -m /tmp/mapping gph_result/sc		Restore filenames
 	file_rename.py -s 2 -m /tmp/mapping gph_result/hs
-	file_rename.py -s 3 -m /tmp/mapping -g hs gph_result/hs
+	file_rename.py -s 3 -m /tmp/mapping -p hs_gph_dataset gph_result/hs
 
 Description:
 	Choices:
@@ -20,17 +20,17 @@ Description:
 	2: prefix_ext_swap
 	3: lower_case
 	4: datasets_sort
-	When choice is 4, you must specify the organism.
+	When choice is 4, you must specify the prefix.
 """
 
 import sys, os, re, getopt, csv
 
 class rename:
-	def __init__(self, dir, orgn, choice, mapping_file):
+	def __init__(self, dir, prefix, choice, mapping_file):
 		self.dir = dir
 		self.files = os.listdir(dir)
 		self.files.sort()
-		self.organism = orgn
+		self.prefix = prefix
 		self.choice = int(choice)
 		if self.choice == 1:
 			self.m_file = csv.reader(file(mapping_file), delimiter='\t')
@@ -84,10 +84,10 @@ class rename:
 
 	
 	def datasets_sort(self, f):
-		if self.organism == '':
-			sys.stderr.write('You must specify the organism.\n')
+		if self.prefix == '':
+			sys.stderr.write('You must specify the prefix.\n')
 			sys.exit(2)
-		new_fname = '%s_dataset%d'%(self.organism, self.files.index(f)+1)
+		new_fname = '%s%d'%(self.prefix, self.files.index(f)+1)
 		return new_fname
 	
 	def prefix_ext_swap(self, f):
@@ -110,12 +110,12 @@ if __name__ == '__main__':
 		sys.exit(2)
 		
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hg:s:m:", ["help", "organism=", "choice=", "mapping_file="])
+		opts, args = getopt.getopt(sys.argv[1:], "hp:s:m:", ["help", "prefix=", "choice=", "mapping_file="])
 	except:
 		print __doc__
 		sys.exit(2)
 	
-	organism = ''
+	prefix = ''
 	choice = None
 	mapping_file = None
 	
@@ -123,8 +123,8 @@ if __name__ == '__main__':
 		if opt in ("-h", "--help"):
 			print __doc__
 			sys.exit(2)
-		elif opt in ("-g", "--organism"):
-			organism = arg
+		elif opt in ("-p", "--prefix"):
+			prefix = arg
 		elif opt in ("-s", "--choice"):
 			#choice will be integered in the class.
 			choice = arg
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 			mapping_file = arg
 			
 	if choice and mapping_file and len(args)==1:
-		instance = rename(args[0], organism, choice, mapping_file)
+		instance = rename(args[0], prefix, choice, mapping_file)
 		instance.run()
 	else:
 		print __doc__
