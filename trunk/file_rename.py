@@ -1,35 +1,139 @@
 #!/usr/bin/env python
-import sys,os,re
+"""
+Usage: file_rename.py -m MAPPING_FILE -s CHOICE [OPTION] DIR
+
+Option:
+	DIR is the directory which contains the files to be renamed.
+	-g ..., --organism=...	two letter organism abbreviation
+	-s ..., --choice=...	which type of renaming rule.
+	-m ..., --mapping_file==...	1st column is the old fname, 2nd is the new fname
+	-h, --help              show this help
+	
+Examples:
+	file_rename.py -s 1 -m /tmp/mapping gph_result/sc		Restore filenames
+	file_rename.py -s 2 -m /tmp/mapping gph_result/hs
+	file_rename.py -s 3 -m /tmp/mapping -g hs gph_result/hs
+
+Description:
+	Choices:
+	1: restore
+	2: prefix_ext_swap
+	3: lower_case
+	4: datasets_sort
+	When choice is 4, you must specify the organism.
+"""
+
+import sys, os, re, getopt, csv
 
 class rename:
-	def __init__(self):
-		pass
-	
-	def run(self, dir):
-		files = os.listdir(dir)
-		sys.stderr.write("\tTotally, %d files to be processed.\n"%len(files))
+	def __init__(self, dir, orgn, choice, mapping_file):
+		self.dir = dir
+		self.files = os.listdir(dir)
+		self.files.sort()
+		self.organism = orgn
+		self.choice = int(choice)
+		if self.choice == 1:
+			self.m_file = csv.reader(file(mapping_file), delimiter='\t')
+		else:
+			self.m_file = open(mapping_file, 'w')
+		function_dict = {
+			1:self.restore,
+			2:self.prefix_ext_swap,
+			3:self.lower_case,
+			4:self.datasets_sort
+			}
+		if self.choice not in function_dict:
+			sys.stderr.write("%d: unavailable choice\n"%self.choice)
+			sys.exit(2)
+		self.rule = function_dict[self.choice]
+		#data structure which maps the new filename to old filename,
+		#used to restore the filenames
+		self.new2old_dict = {}
 		
-		for f in files:
-			sys.stderr.write("%d/%d:\t%s\n"%(files.index(f)+1,len(files),f))
-			self.lower_case(dir,f)
+	def dstruc_loadin(self):
+		for row in self.m_file:
+			'''
+			the mapping_file is created by this program itself.
+			The 1st column is old filename, 2nd column is the new filename.
+			'''
+			self.new2old_dict[row[1]] = row[0]
+
+	def run(self):
+		sys.stderr.write("\tTotally, %d files to be processed.\n"%len(self.files))
+		if self.choice == 1:
+			self.rule()
+		else:
+			for f in self.files:
+				sys.stderr.write("%d/%d:\t%s\n"%(self.files.index(f)+1,len(self.files),f))
+				src_pathname = os.path.join(self.dir, f)
+				new_fname = self.rule(f)
+				dst_pathname = os.path.join(self.dir, new_fname)
+				os.rename(src_pathname, dst_pathname)
+				self.m_file.write('%s\t%s\n'%(f, new_fname))
 	
-	def prefix_ext_swap(self, dir, f):
-		src_pathname = os.path.join(dir, f)
+	def restore(self):
+		#loadin the new2old_dict.
+		self.dstruc_loadin()
+		
+		for f in self.files:
+			if f in self.new2old_dict:
+				sys.stderr.write("%d/%d:\t%s\n"%(self.files.index(f)+1,len(self.files),f))
+				src_pathname = os.path.join(self.dir, f)
+				dst_pathname = os.path.join(self.dir, self.new2old_dict[f])
+				os.rename(src_pathname, dst_pathname)
+
+	
+	def datasets_sort(self, f):
+		if self.organism == '':
+			sys.stderr.write('You must specify the organism.\n')
+			sys.exit(2)
+		new_fname = '%s_dataset%d'%(self.organism, self.files.index(f)+1)
+		return new_fname
+	
+	def prefix_ext_swap(self, f):
 		prefix,ext = os.path.splitext(f)
 		if ext == ext[1:]:
 			sys.stderr.write('the filename has no extension, ignore\n')
-			return
-		ext = ext[1:]
+			return f
 		#remove the dot(.)
-		dst_pathname = os.path.join(dir, ext+'_'+prefix)
-		os.rename(src_pathname, dst_pathname)
-	
-	def lower_case(self, dir, f):
-		src_pathname = os.path.join(dir, f)
-		dst_pathname = os.path.join(dir,f.lower())
-		os.rename(src_pathname, dst_pathname)
+		ext = ext[1:]
+		new_fname = ext+'_'+prefix
+		return new_fname
+
+	def lower_case(self, f):
+		new_fname = f.lower()
+		return new_fname
 
 if __name__ == '__main__':
-	instance = rename()
-	instance.run(sys.argv[1])
-	#argv[1] specifies the directory containing the files to be renamed.
+	if len(sys.argv) == 1:
+		print __doc__
+		sys.exit(2)
+		
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "hg:s:m:", ["help", "organism=", "choice=", "mapping_file="])
+	except:
+		print __doc__
+		sys.exit(2)
+	
+	organism = ''
+	choice = None
+	mapping_file = None
+	
+	for opt, arg in opts:
+		if opt in ("-h", "--help"):
+			print __doc__
+			sys.exit(2)
+		elif opt in ("-g", "--organism"):
+			organism = arg
+		elif opt in ("-s", "--choice"):
+			#choice will be integered in the class.
+			choice = arg
+		elif opt in ("-m", "--mapping_file"):
+			mapping_file = arg
+			
+	if choice and mapping_file and len(args)==1:
+		instance = rename(args[0], organism, choice, mapping_file)
+		instance.run()
+	else:
+		print __doc__
+		sys.exit(2)
