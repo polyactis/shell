@@ -37,7 +37,7 @@ echo "Done"
 echo "cluster_stat2"
 ~/script/annot/bin/cluster_stat.py -k $schema -c -s $mcl_table2 -t $cluster_table2 -w -b
 echo "Done"
-echo "gene_stat"
+echo "gene_stat2"
 ~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table2 -m $mcl_table2 -l
 echo "Done"
 date
