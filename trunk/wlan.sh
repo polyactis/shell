@@ -15,7 +15,7 @@ echo "2. Math"
 echo "3. zzhao"
 echo "4. hto-ww"
 echo "5. hto_eth0"
-echo "6. belkin54g"
+echo "6. Wei"
 read a
 if [ $a = "1" ]; then
 	route del default gw src
@@ -56,6 +56,7 @@ fi
 
 if [ $a = "6" ]; then
 	route del default gw src
-	iwconfig $interface essid "belkin54g"
+	iwconfig $interface essid "Wei"
+	iwconfig $interface key "7BCEEE359D"
 	dhclient $interface
 fi
