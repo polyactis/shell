@@ -26,7 +26,7 @@ echo "cluster_stat "
 ~/script/annot/bin/cluster_stat.py -k $schema -c -s $mcl_table -t $cluster_table -w -b
 echo "Done"
 echo "gene_stat"
-~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table -m $mcl_table
+~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table -m $mcl_table -l
 echo "Done"
 echo "Third stage pruning"
 ~/script/annot/bin/cluster_prune.py -k $schema -c -p 2 -s $mcl_table -t $mcl_table2
@@ -41,6 +41,6 @@ echo "cluster_stat2"
 ~/script/annot/bin/cluster_stat.py -k $schema -c -s $mcl_table2 -t $cluster_table2 -w -b
 echo "Done"
 echo "gene_stat"
-~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table2 -m $mcl_table2
+~/script/annot/bin/gene_stat.py -k $schema -p 0.001 -w -t $cluster_table2 -m $mcl_table2 -l
 echo "Done"
 date
