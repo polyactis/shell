@@ -1,5 +1,4 @@
 #!/bin/sh
-ps -ef
 date
 echo -n 'Starting to dump the '
 echo -n $1
