@@ -9,7 +9,8 @@ date
 #pg_dump microarraydb >/usr/local/src/zip/microarraydb
 #echo "microarraydb dumped to /usr/local/src/zip/microarraydb"
 #while [ 0 == 0 ] ;do
-#	ps -ef|grep at.py >/dev/null
+#	ps -ef >/tmp/0
+#	grep dm_probeset1 /tmp/0
 #	if [ $? == 1 ]; then
 #		break
 #	fi
