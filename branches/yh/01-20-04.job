@@ -1,0 +1,3 @@
+#/bin/sh
+
+wget --retr-symlinks -c -nd -P /usr/local/src/SMD/SC ftp://genome-ftp.stanford.edu/pub/smd/organisms/SC/* 2>01-20-04.job.log

@@ -1,0 +1,6 @@
+#/bin/sh
+
+wget --retr-symlinks -c -nd -P /usr/local/src/SMD/CE ftp://genome-ftp.stanford.edu/pub/smd/organisms/CE/* 2>02-21-04.job.log_CE
+wget --retr-symlinks -c -nd -P /usr/local/src/SMD/DM ftp://genome-ftp.stanford.edu/pub/smd/organisms/DM/* 2>02-21-04.job.log_DM
+#wget --retr-symlinks -c -nd -P /usr/local/src/SMD/MM ftp://genome-ftp.stanford.edu/pub/smd/organisms/MM/* 2>02-21-04.job.log_MM
+#wget --retr-symlinks -c -nd -P /usr/local/src/SMD/AT ftp://genome-ftp.stanford.edu/pub/smd/organisms/AT/* 2>02-21-04.job.log_AT
