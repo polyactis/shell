@@ -1,4 +1,6 @@
 #!/bin/sh
+#argv[1] is the path for the directory.
+#argv[2] is the name of the tar file.
 date
 echo -n 'Starting to backup ...'
 tar -cvvf /usr/local/src/zip/$2.tar $1
