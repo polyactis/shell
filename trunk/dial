@@ -1,0 +1,21 @@
+#!/bin/sh
+
+echo "(c)onnect or (d)isconnect"
+read answer
+if [ $answer = "c" ]; then
+	
+	echo "1).cnc"
+	echo "2).usc"
+	read choice
+	if [ $choice = "1" ]; then
+		route del default gw src
+		pon cnc
+	else 
+		route del default gw src
+		pon usc
+	fi
+
+else
+	route add default gw src
+	poff
+fi
