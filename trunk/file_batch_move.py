@@ -1,23 +1,36 @@
 #!/usr/bin/env python
 '''
-Usage:	file_batch_move.py SRCDIR DSTDIR
+Usage:	file_batch_move.py -l FILE SRCDIR DSTDIR
 
+Option:
+	SRCDIR is the source directory.
+	DSTDIR is the destiny directory.
+	-l ..., --list_file=..., FILE contains the names of those files to be moved.
+	-h, --help              show this help
+	
 Description:
 	a program to move a bunch of files from one directory to another directory.
 	It is useful for remote linux machines with no GUI access.
 '''
 
-import sys,os,re
+import sys, os, getopt, csv
 from sets import Set
 
 class file_batch_move:
-	def __init__(self, srcdir, dstdir):
+	def __init__(self, srcdir, dstdir, list_file):
 		self.srcdir = srcdir
 		self.dstdir = dstdir
-		self.files_to_move = Set(['01-20-04.job'])
-		self.no_of_files_to_move = len(self.files_to_move)
+		self.list_f = csv.reader(file(list_file))
+		self.files_to_move = Set()
 	
+	def dstruc_loadin(self):
+		for row in self.list_f:
+			self.files_to_move.add(row[0])
+		self.no_of_files_to_move = len(self.files_to_move)
+		
 	def run(self):
+		self.dstruc_loadin()
+		
 		files = os.listdir(self.srcdir)
 		sys.stderr.write("\tTotally, %d files to be moved from %s to %s.\n"%\
 			(self.no_of_files_to_move, self.srcdir, self.dstdir))
@@ -31,9 +44,26 @@ class file_batch_move:
 				os.rename(src_pathname, dst_pathname)
 
 if __name__ == '__main__':
-	if len(sys.argv) != 3:
+	if len(sys.argv) == 1:
+		print __doc__
+		sys.exit(2)
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "hl:", ["help", "list_file="])
+	except:
 		print __doc__
 		sys.exit(2)
 	
-	instance = file_batch_move(sys.argv[1], sys.argv[2])
-	instance.run()
+	list_file = ''
+	for opt, arg in opts:
+		if opt in ("-h", "--help"):
+			print __doc__
+			sys.exit(2)
+		elif opt in ("-l", "--list_file"):
+			list_file = arg
+	
+	if list_file and len(args) == 2:
+		instance = file_batch_move(args[0], args[1], list_file)
+		instance.run()
+	else:
+		print __doc__
+		sys.exit(2)
