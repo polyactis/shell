@@ -19,9 +19,9 @@ fi
 
 
 if [ $a = "4" ]; then
-	ssh app1.cmb.usc.edu -l yuhuang
+	ssh app1.cmb.usc.edu -X -l yuhuang
 fi
 
 if [ $a = "5" ]; then
-	ssh app2.cmb.usc.edu -l yuhuang
+	ssh app2.cmb.usc.edu -X -l yuhuang
 fi
