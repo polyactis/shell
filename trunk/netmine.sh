@@ -24,10 +24,12 @@ e_graph_fname=F$op\E
 if [ $organism = "sc" ]
 then
 	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -e6 -g1 -s200"
+	schema=sc_54_6661
 	echo "Default parameter is " $default_parameter
 	elif [ $organism = "mm" ]
 	then
 		default_parameter="--mp=mm79_5 -n24305  -p 4088951 -l79 -e6 -g1 -s200"
+		schema=mm_79
 		echo "Default parameter is" $default_parameter
 		else
 			echo "Organism not supported."
@@ -45,8 +47,8 @@ mpirun N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --o
 date
 
 echo "########II. cluster_stat_sc on connected components######"
-echo ~/qjob/cluster_stat.sh sc_54_6661 F$op $organism 1
-~/qjob/cluster_stat.sh sc_54_6661 F$op $organism 1
+echo ~/qjob/cluster_stat.sh $schema F$op $organism 1
+~/qjob/cluster_stat.sh $schema F$op $organism 1
 date
 
 echo "########III. 2nd-order clusters covering connected components###"
@@ -55,7 +57,7 @@ cd ~/bin/hhu_clustering/data/output/netmine/
 ~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
 echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-echo ~/qjob/cluster_stat.sh sc_54_6661 $e_graph_fname $organism 1
-~/qjob/cluster_stat.sh sc_54_6661 $e_graph_fname $organism 1
+echo ~/qjob/cluster_stat.sh $schema $e_graph_fname $organism 1
+~/qjob/cluster_stat.sh $schema $e_graph_fname $organism 1
 date
 
