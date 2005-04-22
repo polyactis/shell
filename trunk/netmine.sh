@@ -47,8 +47,8 @@ mpirun N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --o
 date
 
 echo "########II. cluster_stat_sc on connected components######"
-echo ~/qjob/cluster_stat.sh $schema F$op $organism 1
-~/qjob/cluster_stat.sh $schema F$op $organism 1
+echo ~/script/shell/cluster_stat.sh $schema F$op $organism 1
+~/script/shell/cluster_stat.sh $schema F$op $organism 1
 date
 
 echo "########III. 2nd-order clusters covering connected components###"
@@ -57,7 +57,7 @@ cd ~/bin/hhu_clustering/data/output/netmine/
 ~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
 echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-echo ~/qjob/cluster_stat.sh $schema $e_graph_fname $organism 1
-~/qjob/cluster_stat.sh $schema $e_graph_fname $organism 1
+echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
+~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
 date
 
