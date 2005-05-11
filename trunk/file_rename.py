@@ -13,6 +13,7 @@ Examples:
 	file_rename.py -s 1 -m /tmp/mapping gph_result/sc		Restore filenames
 	file_rename.py -s 2 -m /tmp/mapping gph_result/hs
 	file_rename.py -s 3 -m /tmp/mapping -p hs_gph_dataset gph_result/hs
+	file_rename.py -s 4 -p mm_dataset -m mapping/mm_47_dataset_mapping mm_47/
 
 Description:
 	Choices:
