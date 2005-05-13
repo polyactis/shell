@@ -71,7 +71,9 @@ class rename:
 				dst_pathname = os.path.join(self.dir, new_fname)
 				os.rename(src_pathname, dst_pathname)
 				self.m_file.write('%s\t%s\n'%(f, new_fname))
-	
+		del self.m_file	#05-13-05 sometimes it's csv.reader. sometimes, it's an open file handler.
+			#delete it to close the open file handler.
+		
 	def restore(self):
 		#loadin the new2old_dict.
 		self.dstruc_loadin()
