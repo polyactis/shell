@@ -5,7 +5,7 @@ then
 	echo "Usage:"
 	echo "    cluster_stat.sh SCHEMA INPUT_FILE ORGANISM COPATH_FLAG"
 	echo ""
-	echo "COPATH_FLAG is 1(copath) or 2(codense)"
+	echo "COPATH_FLAG is 1(copath) or 2(codense), 3(biclustering)"
 	echo
 	echo "This is a script linking all stat programs"
 	exit
@@ -40,8 +40,16 @@ fi
 source ~/.bash_profile
 date
 cd ~/bin/hhu_clustering/data/output/netmine/
-echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
-~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
+
+if [ $codenOrcopath = "3" ]
+then
+	echo ~/script/annot/bin/codense/codense2db.py -k $1 -c -t $splat_result_table -m $mcl_result_table $2
+	~/script/annot/bin/codense/codense2db.py -k $1 -c -t $splat_result_table -m $mcl_result_table $2
+	else
+	echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
+	~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
+fi
+
 echo ~/script/annot/bin/cluster_stat.py -k $1 -s $mcl_result_table  -t $cluster_stat_table -b -w -c
 ~/script/annot/bin/cluster_stat.py -k $1 -s $mcl_result_table  -t $cluster_stat_table -b -w -c
 echo ~/script/annot/bin/gene_stat.py -k $1 -t $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
