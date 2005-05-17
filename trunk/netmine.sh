@@ -1,48 +1,49 @@
 #!/bin/sh
 
-if test $# -lt 3
+if test $# -lt 4
 then
 	echo "Usage:"
-	echo "    netmine.sh OUTPUT_SUFFIX ORGANISM PARAMETERS"
+	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA ORGANISM PARAMETERS"
 	echo 
 	echo "This is shell script simplifying running netmine"
+	echo "PARAMETERS are -e -q -z (-w or -j --match_cut=)"
+	echo "Ignore ORGANISM(05-16-05)"
 	exit
 fi
 
 op=$1
-organism=$2
+schema=$2
+organism=$3
 parameter=''
-while test -n "$3"
+while test -n "$4"
 do
-parameter=$parameter' '$3
+parameter=$parameter' '$4
 shift
 done
-#parameter is -q -z (-w or -j --match_cut=)
 
 e_graph_fname=F$op\E
 
-if [ $organism = "sc" ]
-then
-	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -e6 -g1 -s200"
-	schema=sc_54_6661
-	echo "Default parameter is " $default_parameter
-	elif [ $organism = "mm" ]
-	then
-		default_parameter="--mp=mm79_5 -n24305  -p 4088951 -l79 -e6 -g1 -s200"
-		schema=mm_79
-		echo "Default parameter is" $default_parameter
-		else
-			echo "Organism not supported."
-			exit
-fi
+case "$schema" in
+	sc_54_6661)	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -g1 -s200"
+		echo "Default parameter is " $default_parameter;;
+	mm_79)	default_parameter="--mp=mm79_5 -n24305  -p 4088951 -l79 -g1 -s200"
+		echo "Default parameter is" $default_parameter;;
+	sc_new_38)	default_parameter="--mp=sc_new_38_4 -n6661 -p1515677 -l38 -g1 -s200"
+		echo "Default parameter is" $default_parameter;;
+	mm_73)	default_parameter="--mp=mm_73_6 -n8513  -p5269747 -l73 -g1 -s200"
+		echo "Default parameter is" $default_parameter;;
+	*)	echo "Schema" $schema "not supported"
+		exit 2;;
+
+esac
 
 #the python library path
 source ~/.bash_profile
 date
 
 echo "########I. running netmine##########"
-echo mpirun N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-mpirun N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+echo mpirun.lam N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+mpirun.lam N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
 
 date
 
