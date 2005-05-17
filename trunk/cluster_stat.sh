@@ -8,6 +8,7 @@ then
 	echo "COPATH_FLAG is 1(copath) or 2(codense), 3(biclustering)"
 	echo
 	echo "This is a script linking all stat programs"
+	echo "Ignore ORGANISM(05-16-05)"
 	exit
 fi
 
@@ -23,18 +24,19 @@ cluster_stat_table=cluster_$2
 p_gene_table=p_gene_$2_e5
 gene_p_table=gene_p_$2_e5_p01
 
-if [ $organism = "sc" ]
-then
-	gene_id2no=sc_54_6661_gene_id2no
-	echo $gene_id2no
-	elif [ $organism = "mm" ]
-	then
-		gene_id2no="mm_79_gene_id2no"
-		echo $gene_id2no
-		else
-			echo "Organism not supported."
-			exit
-fi
+case "$schema" in
+	sc_new_38)	gene_id2no=sc_54_6661_gene_id2no
+		echo $gene_id2no;;
+	sc_54_6661)	gene_id2no=sc_54_6661_gene_id2no
+		echo $gene_id2no;;
+	mm_79)	gene_id2no="mm_79_gene_id2no"
+		echo $gene_id2no;;
+	mm_73)	gene_id2no="mm_73_gene_id2no"
+		echo $gene_id2no;;
+	*)	echo "Schema" $schema "not supported"
+		exit 2;;
+esac
+
 
 #the python library path
 source ~/.bash_profile
