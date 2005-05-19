@@ -1,4 +1,5 @@
 #!/bin/sh
+#$ -pe mpich 18
 
 if test $# -lt 4
 then
@@ -26,7 +27,7 @@ e_graph_fname=F$op\E
 case "$schema" in
 	sc_54_6661)	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -g1 -s200"
 		echo "Default parameter is " $default_parameter;;
-	mm_79)	default_parameter="--mp=mm79_5 -n24305  -p 4088951 -l79 -g1 -s200"
+	mm_79)	default_parameter="--mp=mm_79_5 -n24305  -p 4088951 -l79 -g1 -s200"
 		echo "Default parameter is" $default_parameter;;
 	sc_new_38)	default_parameter="--mp=sc_new_38_4 -n6661 -p1515677 -l38 -g1 -s200"
 		echo "Default parameter is" $default_parameter;;
@@ -42,8 +43,10 @@ source ~/.bash_profile
 date
 
 echo "########I. running netmine##########"
-echo mpirun.lam N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-mpirun.lam N ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+#echo mpirun.mpich -np 18 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+#mpirun.mpich -np 18 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
 
 date
 
