@@ -4,17 +4,19 @@
 if test $# -lt 4
 then
 	echo "Usage:"
-	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA ORGANISM PARAMETERS"
+	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA SUPPORT PARAMETERS"
 	echo 
 	echo "This is shell script simplifying running netmine"
 	echo "PARAMETERS are -e -q -z (-w or -j --match_cut=)"
-	echo "Ignore ORGANISM(05-16-05)"
 	exit
 fi
 
 op=$1
 schema=$2
-organism=$3
+#Ignore ORGANISM(05-16-05)
+organism=$2
+#05-20-05 add parameter support
+support=$3
 parameter=''
 while test -n "$4"
 do
@@ -22,31 +24,48 @@ parameter=$parameter' '$4
 shift
 done
 
+#05-20-05 getting no_of_genes, no_of_edges, no_of_columns
+matrix_prefix=$schema\_$support
+matrix_file=~/bin/hhu_clustering/data/input/$matrix_prefix
+echo "Getting no_of_genes..."
+no_of_genes=`wc $matrix_file.matrix|awk '{print $1}'`
+echo "Getting no_of_edges..."
+no_of_edges=`wc $matrix_file.cor_vector|awk '{print $1}'`
+echo "Getting no_of_columns..."
+no_of_columns=`~/script/shell/count_columns.py $matrix_file.cor_vector|awk '{print $3}'`
+#the first and second column is the edge id
+no_of_columns=`expr $no_of_columns - 2`
+default_parameter="--mp=$matrix_prefix -n $no_of_genes -p $no_of_edges -l $no_of_columns -g1 -s200"
+echo "Default parameter is" $default_parameter
+
 e_graph_fname=F$op\E
 
-case "$schema" in
-	sc_54_6661)	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -g1 -s200"
-		echo "Default parameter is " $default_parameter;;
-	mm_79)	default_parameter="--mp=mm_79_5 -n24305  -p 4088951 -l79 -g1 -s200"
-		echo "Default parameter is" $default_parameter;;
-	sc_new_38)	default_parameter="--mp=sc_new_38_4 -n6661 -p1515677 -l38 -g1 -s200"
-		echo "Default parameter is" $default_parameter;;
-	mm_73)	default_parameter="--mp=mm_73_6 -n8513  -p5269747 -l73 -g1 -s200"
-		echo "Default parameter is" $default_parameter;;
-	*)	echo "Schema" $schema "not supported"
-		exit 2;;
+#05-20-05 no more schema guessing
 
-esac
+#case "$schema" in
+#	sc_54_6661)	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -g1 -s200"
+#		echo "Default parameter is " $default_parameter;;
+#	mm_79)	default_parameter="--mp=mm_79_5 -n24305  -p 4088951 -l79 -g1 -s200"
+#		echo "Default parameter is" $default_parameter;;
+#	sc_new_38)	default_parameter="--mp=sc_new_38_4 -n6661 -p1515677 -l38 -g1 -s200"
+#		echo "Default parameter is" $default_parameter;;
+#	mm_73)	default_parameter="--mp=mm_73_6 -n8513  -p5269747 -l73 -g1 -s200"
+#		echo "Default parameter is" $default_parameter;;
+#	*)	echo "Schema" $schema "not supported"
+#		exit 2;;
+#
+#esac
 
 #the python library path
 source ~/.bash_profile
 date
 
 echo "########I. running netmine##########"
-echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-#echo mpirun.mpich -np 18 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-#mpirun.mpich -np 18 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+#echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+#mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+#05-19-05 mpich start to use 40 nodes
+echo mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
 
 date
 
