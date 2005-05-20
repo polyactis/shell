@@ -35,14 +35,14 @@ class count_columns:
 		"""
 		sys.stderr.write("\tTotally, %d files to be processed.\n"%len(self.files))
 		for f in self.files:
-			sys.stderr.write("%d/%d:\t%s"%(self.files.index(f)+1,len(self.files),f))
+			sys.stdout.write("%d/%d:\t%s"%(self.files.index(f)+1,len(self.files),f))
 			src_pathname = f
 			reader = csv.reader(file(src_pathname), delimiter=self.delimiter)
 			try:
 				row = reader.next()
-				sys.stderr.write("\t%d\n"%len(row))
+				sys.stdout.write("\t%d\n"%len(row))
 			except:
-				sys.stderr.write('csv reader.next error\n')
+				sys.stdout.write('csv reader.next error\n')
 			del reader
 
 
