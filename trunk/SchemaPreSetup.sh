@@ -39,4 +39,9 @@ echo ~/script/annot/bin/gene_go_functions.py -k $schema -c
 echo ~/script/annot/bin/graph_reorganize.py -k $schema -t1 -g $organism $gph_dir $gph_dir_gspan 
 ~/script/annot/bin/graph_reorganize.py -k $schema -t1 -g $organism $gph_dir $gph_dir_gspan 
 
+#05-20-05 add prepare_gene_id2no.py
+gene_id2no=$schema\_gene_id2no
+echo ~/script/annot/bin/prepare_gene_id2no.py -k $schema ~/bin/hhu_clustering/$gene_id2no
+~/script/annot/bin/prepare_gene_id2no.py -k $schema ~/bin/hhu_clustering/$gene_id2no
+
 date
