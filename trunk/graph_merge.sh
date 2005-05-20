@@ -38,26 +38,32 @@ esac
 
 echo
 echo ##### II. generate cor_vector and sig_vector files ####
-echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+
+#05-20-05 use mpich
+echo mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 
 echo ##### III. transform gspan format into matrix format ####
 echo ~/script/shell/clustering_test.sh $merge_graph_file
 ~/script/shell/clustering_test.sh $merge_graph_file
 
-case "$schema" in
-	sc_new_38)	gene_id2no=sc_54_6661_gene_id2no
-		echo $gene_id2no;;
-	sc_54_6661)	gene_id2no=sc_54_6661_gene_id2no
-		echo $gene_id2no;;
-	mm_79)	gene_id2no="mm_79_gene_id2no"
-		echo $gene_id2no;;
-	mm_73)	gene_id2no="mm_73_gene_id2no"
-		echo $gene_id2no;;
-	*)	echo "Schema" $schema "not supported"
-		exit 2;;
-esac
+#05-20-05 no more schema guessing
 
+#case "$schema" in
+#	sc_new_38)	gene_id2no=sc_54_6661_gene_id2no
+#		echo $gene_id2no;;
+#	sc_54_6661)	gene_id2no=sc_54_6661_gene_id2no
+#		echo $gene_id2no;;
+#	mm_79)	gene_id2no="mm_79_gene_id2no"
+#		echo $gene_id2no;;
+#	mm_73)	gene_id2no="mm_73_gene_id2no"
+#		echo $gene_id2no;;
+#	*)	echo "Schema" $schema "not supported"
+#		exit 2;;
+#esac
+gene_id2no=$schema\_gene_id2no
 echo #####IV. Dumping cor_vector and sig_vector to database###
 echo ~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
 ~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
