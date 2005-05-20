@@ -13,11 +13,15 @@ organism=$1
 schema=$2
 unknown_file=/tmp/$organism.unknown
 go_file=/tmp/$schema.go
-
+datasets_dir=~/datasets/$schema
 
 #the python library path
 source ~/.bash_profile
 date
+#05-20-05 add gene_table.py, take the union form
+echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -u -c $datasets_dir
+~/script/annot/bin/gene_table.py -k $schema -g $organism -u -c $datasets_dir
+
 echo ~/script/annot/bin/find_unknown_genes.py -g $organism $unknown_file
 ~/script/annot/bin/find_unknown_genes.py -g $organism $unknown_file
 
