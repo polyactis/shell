@@ -3,18 +3,30 @@
 if test $# -ne 3
 then
 	echo "Usage:"
-	echo "    graph_merge.sh SUPPORT SCHEMA TYPE"
+	echo "    graph_merge.sh SUPPORT SCHEMA RUNCODE"
 	echo ""
 	echo "a script calling graph_merge and complete_cor_vector.py."
-	echo "TYPE 1 uses graph_merge.py, TYPE 2 uses graph_merge_lam.py"
-	echo "TYPE 3 skips graph_merge"
+	echo
+	echo "RUNCODE is something like 1010, or 2110"
+	echo "	The four digits correspond to "
+	echo "	1.graph_merge, 2.complete_cor_vector,"
+	echo "	3.clustering_test, 4.haiyan_cor_vector2db."
+	echo "1 means enable, 0 means disable"
+	echo
+	echo "For graph_merge,"
+	echo "	1 uses graph_merge.py, 2 uses graph_merge_lam.py"
 	echo
 	exit
 fi
 
 support=$1
 schema=$2
-type=$3
+runcode=$3
+#05-21-05 use runcode to control which step is necessary
+type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
+type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
+type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
+type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
 
 #the python library path
 source ~/.bash_profile
@@ -26,28 +38,30 @@ dataset_dir=~/datasets/$schema/
 date
 
 echo ##### I. generate the summary graph ####
-case "$type" in
+case "$type_1" in
 	1)	echo ~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file
-	~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
-	2)	echo mpirun.lam N ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
-		mpirun.lam N ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
-	3)	echo "graph_merge skipped";;
-	*)	echo "TYPE" $type "not supported"
-		exit 2;;
+		~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
+	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+	*)	echo "graph_merge skipped";;
 esac
 
 echo
-echo ##### II. generate cor_vector and sig_vector files ####
-#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+if [ $type_2 = "1" ]; then
+	echo ##### II. generate cor_vector and sig_vector files ####
+	#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 
-#05-20-05 use mpich
-echo mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	#05-20-05 use mpich
+	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+fi
 
-echo ##### III. transform gspan format into matrix format ####
-echo ~/script/shell/clustering_test.sh $merge_graph_file
-~/script/shell/clustering_test.sh $merge_graph_file
+if [ $type_3 = "1" ]; then
+	echo ##### III. transform gspan format into matrix format ####
+	echo ~/script/shell/clustering_test.sh $merge_graph_file
+	~/script/shell/clustering_test.sh $merge_graph_file
+fi
 
 #05-20-05 no more schema guessing
 
@@ -63,9 +77,11 @@ echo ~/script/shell/clustering_test.sh $merge_graph_file
 #	*)	echo "Schema" $schema "not supported"
 #		exit 2;;
 #esac
-gene_id2no=$schema\_gene_id2no
-echo #####IV. Dumping cor_vector and sig_vector to database###
-echo ~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
-~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
+if [ $type_4 = "1" ]; then
+	gene_id2no=$schema\_gene_id2no
+	echo #####IV. Dumping cor_vector and sig_vector to database###
+	echo ~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
+	~/script/annot/bin/codense/haiyan_cor_vector2db.py -c -k $schema -p ~/bin/hhu_clustering/$gene_id2no -i $merge_graph_cor -s $merge_graph_sig
+fi
 
 date
