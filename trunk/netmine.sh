@@ -1,13 +1,20 @@
 #!/bin/sh
 #$ -pe mpich 18
 
-if test $# -lt 4
+if test $# -lt 5
 then
 	echo "Usage:"
-	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA SUPPORT PARAMETERS"
+	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA SUPPORT RUNCODE PARAMETERS"
 	echo 
 	echo "This is shell script simplifying running netmine"
 	echo "PARAMETERS are -e -q -z (-w or -j --match_cut=)"
+	echo
+	echo "RUNCODE controls which part to turn on."
+	echo "	The three digits correspond to "
+	echo "	1.netmine_wrapper.py, 2.cluster_stat.sh (CC),"
+	echo "	3.cluster_stat.sh (2nd-order)"
+	echo "1 means enable, 0 means disable"
+	echo
 	exit
 fi
 
@@ -17,10 +24,16 @@ schema=$2
 organism=$2
 #05-20-05 add parameter support
 support=$3
+runcode=$4
+#05-23-05 use runcode to control which step is necessary
+type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
+type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
+type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
+
 parameter=''
-while test -n "$4"
+while test -n "$5"
 do
-parameter=$parameter' '$4
+parameter=$parameter' '$5
 shift
 done
 
@@ -60,27 +73,33 @@ e_graph_fname=F$op\E
 source ~/.bash_profile
 date
 
-echo "########I. running netmine##########"
-#echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-#mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-#05-19-05 mpich start to use 40 nodes
-echo mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-mpirun.mpich -np 40 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+if [ $type_1 = "1" ]; then
+	echo "########I. running netmine##########"
+	#echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+	#mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+	#05-19-05 mpich start to use 40 nodes
+	#05-21-05 mpich uses 20 big memory nodes
+	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+	mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+fi
 
 date
 
-echo "########II. cluster_stat_sc on connected components######"
-echo ~/script/shell/cluster_stat.sh $schema F$op $organism 1
-~/script/shell/cluster_stat.sh $schema F$op $organism 1
-date
+if [ $type_2 = "1" ]; then
+	echo "########II. cluster_stat_sc on connected components######"
+	echo ~/script/shell/cluster_stat.sh $schema F$op $organism 1
+	~/script/shell/cluster_stat.sh $schema F$op $organism 1
+	date
+fi
 
-echo "########III. 2nd-order clusters covering connected components###"
-echo ~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
-cd ~/bin/hhu_clustering/data/output/netmine/
-~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
+if [ $type_3 = "1" ]; then
+	echo "########III. 2nd-order clusters covering connected components###"
+	echo ~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
+	cd ~/bin/hhu_clustering/data/output/netmine/
+	~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
-echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
-~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
-date
-
+	echo "########IV. cluster_stat_sc on 2nd-order clusters###"
+	echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
+	~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
+	date
+fi
