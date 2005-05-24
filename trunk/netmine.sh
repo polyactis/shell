@@ -87,8 +87,8 @@ date
 
 if [ $type_2 = "1" ]; then
 	echo "########II. cluster_stat_sc on connected components######"
-	echo ~/script/shell/cluster_stat.sh $schema F$op $organism 1
-	~/script/shell/cluster_stat.sh $schema F$op $organism 1
+	echo ~/script/shell/cluster_stat.sh $schema F$op 111110
+	~/script/shell/cluster_stat.sh $schema F$op 111110
 	date
 fi
 
@@ -99,7 +99,7 @@ if [ $type_3 = "1" ]; then
 	~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
 	echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-	echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
-	~/script/shell/cluster_stat.sh $schema $e_graph_fname $organism 1
+	echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
+	~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
 	date
 fi
