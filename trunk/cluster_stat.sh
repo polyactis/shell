@@ -46,10 +46,10 @@ date
 cd ~/bin/hhu_clustering/data/output/netmine/
 
 case "$type_1" in
-	1)	echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
-		~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2;;
-	2)	echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2
-		~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y$4 -t $splat_result_table -m $mcl_result_table $2;;
+	1)	echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -t $splat_result_table -m $mcl_result_table $2
+		~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -t $splat_result_table -m $mcl_result_table $2;;
+	2)	echo ~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $2
+		~/script/annot/bin/codense/codense2db.py -k $1 -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $2;;
 	3)	echo ~/script/annot/bin/codense/codense2db.py -k $1 -c -t $splat_result_table -m $mcl_result_table $2
 		~/script/annot/bin/codense/codense2db.py -k $1 -c -t $splat_result_table -m $mcl_result_table $2;;
 	*)	echo "codense2db skipped";;
