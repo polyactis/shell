@@ -41,7 +41,8 @@ done
 matrix_prefix=$schema\_$support
 matrix_file=~/bin/hhu_clustering/data/input/$matrix_prefix
 echo "Getting no_of_genes..."
-no_of_genes=`wc $matrix_file.matrix|awk '{print $1}'`
+#05-24-05 get no_of_genes from the mapping file
+no_of_genes=`wc ~/bin/hhu_clustering/$schema\_gene_id2no|awk '{print $1}'`
 echo "Getting no_of_edges..."
 no_of_edges=`wc $matrix_file.cor_vector|awk '{print $1}'`
 echo "Getting no_of_columns..."
