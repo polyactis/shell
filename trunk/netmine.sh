@@ -14,6 +14,8 @@ then
 	echo "	1.netmine_wrapper.py, 2.cluster_stat.sh (CC),"
 	echo "	3.cluster_stat.sh (2nd-order)"
 	echo "1 means enable, 0 means disable"
+	echo "netmine_wrapper has two modes. 1 means using qsub assigned"
+	echo "2 means to use 20 nodes in ~/hostfile"
 	echo
 	exit
 fi
@@ -54,42 +56,24 @@ echo "Default parameter is" $default_parameter
 
 e_graph_fname=F$op\E
 
-#05-20-05 no more schema guessing
-
-#case "$schema" in
-#	sc_54_6661)	default_parameter="--mp=sc54_5 -n 6661 -p 1342902 -l54 -g1 -s200"
-#		echo "Default parameter is " $default_parameter;;
-#	mm_79)	default_parameter="--mp=mm_79_5 -n24305  -p 4088951 -l79 -g1 -s200"
-#		echo "Default parameter is" $default_parameter;;
-#	sc_new_38)	default_parameter="--mp=sc_new_38_4 -n6661 -p1515677 -l38 -g1 -s200"
-#		echo "Default parameter is" $default_parameter;;
-#	mm_73)	default_parameter="--mp=mm_73_6 -n8513  -p5269747 -l73 -g1 -s200"
-#		echo "Default parameter is" $default_parameter;;
-#	*)	echo "Schema" $schema "not supported"
-#		exit 2;;
-#
-#esac
-
 #the python library path
 source ~/.bash_profile
 date
 
-if [ $type_1 = "1" ]; then
-	echo "########I. running netmine##########"
-	#echo mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-	#mpirun.lam C ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-	#05-19-05 mpich start to use 40 nodes
-	#05-21-05 mpich uses 20 big memory nodes
-	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-	mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-fi
+case "$type_1" in
+	1)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op;;
+	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op;;
+	*)	echo "netmine_wrapper.py skipped";;
+esac
 
 date
 
 if [ $type_2 = "1" ]; then
 	echo "########II. cluster_stat_sc on connected components######"
-	echo ~/script/shell/cluster_stat.sh $schema F$op 111110
-	~/script/shell/cluster_stat.sh $schema F$op 111110
+	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
+	ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
 	date
 fi
 
@@ -100,7 +84,7 @@ if [ $type_3 = "1" ]; then
 	~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
 	echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-	echo ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
-	~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
+	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
+	ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
 	date
 fi
