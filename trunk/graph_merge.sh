@@ -41,8 +41,8 @@ echo ##### I. generate the summary graph ####
 case "$type_1" in
 	1)	echo ~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file
 		~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
-	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
-		mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
 	*)	echo "graph_merge skipped";;
 esac
 
@@ -53,8 +53,8 @@ if [ $type_2 = "1" ]; then
 	#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 
 	#05-20-05 use mpich
-	echo mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-	mpirun.mpich -np 20 -machinefile ~/hostfile_2 /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 fi
 
 if [ $type_3 = "1" ]; then
