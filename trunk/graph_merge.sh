@@ -16,6 +16,9 @@ then
 	echo "For graph_merge,"
 	echo "	1 uses graph_merge.py, 2 uses graph_merge_lam.py"
 	echo
+	echo "For complete_cor_vector,"
+	echo "	1 uses gph_dir to get corCut, 2 uses t-dist's p-value 0.01"
+	echo
 	exit
 fi
 
@@ -35,6 +38,7 @@ merge_graph_cor=~/bin/hhu_clustering/data/input/$schema\_$support.cor_vector
 merge_graph_sig=~/bin/hhu_clustering/data/input/$schema\_$support.sig_vector
 graph_dir=~/gph_result/$schema\_gspan/
 dataset_dir=~/datasets/$schema/
+raw_graph_dir=~/gph_result/$schema/
 date
 
 echo ##### I. generate the summary graph ####
@@ -47,15 +51,17 @@ case "$type_1" in
 esac
 
 echo
-if [ $type_2 = "1" ]; then
-	echo ##### II. generate cor_vector and sig_vector files ####
+
+echo ##### II. generate cor_vector and sig_vector files ####
+case "$type_2" in
 	#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 	#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-
-	#05-20-05 use mpich
-	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-	mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-fi
+	1)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+	mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
+	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+	mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir;;
+	*)	echo "complete_cor_vector.py skipped";;
+esac
 
 if [ $type_3 = "1" ]; then
 	echo ##### III. transform gspan format into matrix format ####
