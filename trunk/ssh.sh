@@ -5,6 +5,7 @@ echo "2. hto-g"
 echo "3. zhoudb"
 echo "4. app1"
 echo "5. app2"
+echo "6. zhoulab"
 read a
 if [ $a = "1" ]; then
 	ssh hto-pc44.usc.edu -l yh
@@ -24,4 +25,8 @@ fi
 
 if [ $a = "5" ]; then
 	ssh app2.cmb.usc.edu -X -l yuhuang
+fi
+
+if [ $a = "6" ]; then
+	ssh zhoulab.usc.edu -l yh
 fi
