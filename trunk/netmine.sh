@@ -14,8 +14,11 @@ then
 	echo "	1.netmine_wrapper.py, 2.cluster_stat.sh (CC),"
 	echo "	3.cluster_stat.sh (2nd-order)"
 	echo "1 means enable, 0 means disable"
+	echo
 	echo "netmine_wrapper has two modes. 1 means using qsub assigned"
 	echo "2 means to use 20 nodes in ~/hostfile"
+	echo
+	echo "cluster_stat.sh: 1 use qsub, 2 just run"
 	echo
 	exit
 fi
@@ -70,12 +73,16 @@ esac
 
 date
 
-if [ $type_2 = "1" ]; then
-	echo "########II. cluster_stat_sc on connected components######"
-	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
-	ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
-	date
-fi
+echo "########II. cluster_stat_sc on connected components######"
+case "$type_2" in
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema F$op 111110
+		~/script/shell/cluster_stat.sh $schema F$op 111110;;
+	*)	echo "cluster_stat.sh skipped";;
+esac
+
+date
 
 if [ $type_3 = "1" ]; then
 	echo "########III. 2nd-order clusters covering connected components###"
