@@ -69,8 +69,8 @@ esac
 #05-19-05 cluster_stat goes to a file
 
 if [ $type_2 = "1" ]; then
-	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -b -w -u 0 $parameter
-	ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -b -w -u 0 $parameter
+	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
+	ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
 fi
 
 if [ $type_3 = "1" ]; then
