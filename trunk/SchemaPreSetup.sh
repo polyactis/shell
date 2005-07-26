@@ -40,8 +40,8 @@ source ~/.bash_profile
 date
 if [ $type_1 = "1" ]; then
 	#05-20-05 add gene_table.py, take the union form
-	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -u -c $datasets_dir
-	~/script/annot/bin/gene_table.py -k $schema -g $organism -u -c $datasets_dir
+	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
+	~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
 fi
 
 if [ $type_2 = "1" ]; then
