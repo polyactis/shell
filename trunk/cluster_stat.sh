@@ -16,6 +16,8 @@ then
 	echo 
 	echo " First digit is COPATH_FLAG."
 	echo " 1(copath), 2(codense), 3(biclustering), 0(skip)"
+	echo " Fourth digit: two choices, 1(p_gene_lm + p_gene_analysis)"
+	echo " 2(p_gene_analysis)"
 	exit
 fi
 
@@ -35,7 +37,7 @@ mcl_result_table=mcl_$2
 cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$2
 p_gene_table=p_gene_$2_e5
 gene_p_table=gene_p_$2_e5_p01
-
+lm_table=lm_$2_e5
 gene_id2no=$schema\_gene_id2no
 echo $gene_id2no
 
@@ -79,10 +81,16 @@ if [ $type_3 = "1" ]; then
 	~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
 fi
 
-if [ $type_4 = "1" ]; then
-	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
-	~/script/annot/bin/p_gene_analysis.py -k $schema -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
-fi
+
+case "$type_4" in
+	1)	echo ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111
+		~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111
+		echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
+		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
+	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
+		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
+	*)	echo "No p_gene_analysis and/or p_gene_lm";;
+esac
 
 
 if [ $type_5 = "1" ]; then
