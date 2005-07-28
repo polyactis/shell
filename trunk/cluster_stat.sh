@@ -3,7 +3,7 @@
 if test $# -lt 3
 then
 	echo "Usage:"
-	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE PARAMETERS"
+	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF PARAMETERS"
 	echo
 	echo "This is a script linking all stat programs"
 	echo "PARAMETERS are passed to cluster_stat.py"
@@ -24,6 +24,7 @@ fi
 schema=$1
 input_file=$2
 runcode=$3
+acc_cutoff=$4
 
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
@@ -36,16 +37,17 @@ mcl_result_table=mcl_$2
 #05-19-05 cluster_stat goes to a file
 cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$2
 p_gene_table=p_gene_$2_e5
-gene_p_table=gene_p_$2_e5_p01
-lm_table=lm_$2_e5
+acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
+lm_table=lm_$2\_e5_a$acc_int
+gene_p_table=gene_p_$2\_e5_a$acc_int
 gene_id2no=$schema\_gene_id2no
 echo $gene_id2no
 
 
 parameter=''
-while test -n "$4"
+while test -n "$5"
 do
-parameter=$parameter' '$4
+parameter=$parameter' '$5
 shift
 done
 
@@ -83,8 +85,8 @@ fi
 
 
 case "$type_4" in
-	1)	echo ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111
-		~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111
+	1)	echo ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff
+		~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff
 		echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out

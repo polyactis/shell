@@ -4,7 +4,7 @@
 if test $# -lt 5
 then
 	echo "Usage:"
-	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA SUPPORT RUNCODE PARAMETERS"
+	echo "    netmine.sh OUTPUT_SUFFIX SCHEMA SUPPORT RUNCODE ACC_CUTOFF PARAMETERS"
 	echo 
 	echo "This is shell script simplifying running netmine"
 	echo "PARAMETERS are -e -q -z (-w or -j --match_cut=)"
@@ -30,15 +30,16 @@ organism=$2
 #05-20-05 add parameter support
 support=$3
 runcode=$4
+acc_cutoff=$5
 #05-23-05 use runcode to control which step is necessary
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
 
 parameter=''
-while test -n "$5"
+while test -n "$6"
 do
-parameter=$parameter' '$5
+parameter=$parameter' '$6
 shift
 done
 
@@ -75,10 +76,10 @@ date
 
 echo "########II. cluster_stat_sc on connected components######"
 case "$type_2" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110;;
-	2)	echo ~/script/shell/cluster_stat.sh $schema F$op 111110
-		~/script/shell/cluster_stat.sh $schema F$op 111110;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema F$op 111110 $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema F$op 111110 $acc_cutoff
+		~/script/shell/cluster_stat.sh $schema F$op 111110 $acc_cutoff;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
 
@@ -91,7 +92,7 @@ if [ $type_3 = "1" ]; then
 	~/script/annot/bin/EdgeClusterFromCopathOutput.py F$op $e_graph_fname
 
 	echo "########IV. cluster_stat_sc on 2nd-order clusters###"
-	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
-	ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110
+	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110 $acc_cutoff
+	ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $e_graph_fname 111110 $acc_cutoff
 	date
 fi
