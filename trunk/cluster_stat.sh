@@ -14,8 +14,8 @@ then
 	echo " 3.gene_stat 4.p_gene_analysis"
 	echo " 5.gene_p_map_redundancy 6.connectivity_original"
 	echo 
-	echo " First digit is COPATH_FLAG."
-	echo " 1(copath), 2(codense), 3(biclustering), 0(skip)"
+	echo " First digit is ALGORITHM type."
+	echo " 1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
 	echo " Fourth digit: two choices, 1(p_gene_lm + p_gene_analysis)"
 	echo " 2(p_gene_analysis)"
 	exit
@@ -65,7 +65,9 @@ case "$type_1" in
 		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -t $splat_result_table -m $mcl_result_table $input_file;;
 	2)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $input_file
 		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $input_file;;
-	3)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table $input_file
+	3)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -y3 $input_file
+		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -y3 $input_file;;
+	4)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table $input_file
 		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table $input_file;;
 	*)	echo "codense2db skipped";;
 esac
