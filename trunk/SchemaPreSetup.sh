@@ -13,6 +13,7 @@ then
 	echo "	5.gene_go_functions.py 6.graph_reorganize.py"
 	echo "	7.prepare_gene_id2no.py"
 	echo
+	echo "1st digit(gene_table.py):1. union 2.intersection"
 	exit
 fi
 
@@ -38,11 +39,13 @@ gph_dir_gspan=~/gph_result/$schema\_gspan
 #the python library path
 source ~/.bash_profile
 date
-if [ $type_1 = "1" ]; then
-	#05-20-05 add gene_table.py, take the union form
-	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
-	~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
-fi
+case "$type_1" in
+	1)	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c -u $datasets_dir
+		~/script/annot/bin/gene_table.py -k $schema -g $organism -c -u $datasets_dir;;
+	2)	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
+		~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir;;
+	*)	echo "gene_table.py skipped";;
+esac
 
 if [ $type_2 = "1" ]; then
 	echo ~/script/annot/bin/find_unknown_genes.py -g $organism $unknown_file
