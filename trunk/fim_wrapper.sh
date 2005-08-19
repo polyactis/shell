@@ -82,10 +82,10 @@ date
 
 echo "########IV. cluster_stat_sc on connected components######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 311110  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 311110 $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat.sh $schema $op 311110 $acc_cutoff
-		~/script/shell/cluster_stat.sh $schema $op 311110 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 320110  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff
+		~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
 
