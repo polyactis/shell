@@ -15,9 +15,12 @@ then
 	echo " 5.gene_p_map_redundancy 6.connectivity_original"
 	echo 
 	echo " First digit is ALGORITHM type."
-	echo " 1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
+	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
+	echo " Second digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
+	echo "   3(MpiClusterGeneStat.py, nodes assigned by qsub)"
+	echo "   if MpiClusterGeneStat.py is on, gene_stat.py will be off"
 	echo " Fourth digit: two choices, 1(p_gene_lm + p_gene_analysis)"
-	echo " 2(p_gene_analysis)"
+	echo "   2(p_gene_analysis)"
 	exit
 fi
 
@@ -74,21 +77,32 @@ esac
 
 #05-19-05 cluster_stat goes to a file
 
-if [ $type_2 = "1" ]; then
-	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
-	ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
-fi
 
-if [ $type_3 = "1" ]; then
-	#05-19-05 cluster_stat goes to a file
-	echo ~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
-	~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
+case "$type_2" in
+	1)	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
+		ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter;;
+	2)	echo mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
+		mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
+	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
+		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
+	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
+esac
+
+if [ $type_2 != "2" ]; then
+	if [ $type_3 = "1" ]; then
+		#05-19-05 cluster_stat goes to a file
+		echo ~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
+		~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
+	fi
+else
+	echo "MpiClusterGeneStat.py is turned on, so gene_stat.py off"
 fi
 
 
 case "$type_4" in
-	1)	echo ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
-		~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
+	1)	echo ssh node27 ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
+		ssh node27 ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
+		#p_gene_lm calls rpy.r, which is banned by qsub. run it elsewhere
 		echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
