@@ -100,8 +100,8 @@ fi
 
 
 case "$type_4" in
-	1)	echo ssh node27 ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
-		ssh node27 ~/script/annot/bin/p_gene_lm.py -k $schema -t $p_gene_table -s $splat_result_table -m $mcl_result_table -l $lm_table -o -j2 -c -b 111 -a $acc_cutoff -n
+	1)	echo ssh node27 ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff
+		ssh node27 ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff
 		#p_gene_lm calls rpy.r, which is banned by qsub. run it elsewhere
 		echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
