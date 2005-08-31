@@ -49,8 +49,8 @@ case "$type_1" in
 		~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
 	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
 		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
-	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
-		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
 	*)	echo "graph_merge skipped";;
 esac
 
