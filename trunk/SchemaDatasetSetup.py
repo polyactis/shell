@@ -41,6 +41,14 @@ class SchemaDatasetSetup:
 		
 	
 	def datasets_move(self, srcdir, dstdir, list_file):
+		"""
+		08-30-05
+			clean up dstdir first
+		"""
+		if os.path.isdir(dstdir):
+			for fname in os.listdir(dstdir):
+				fullpath = os.path.join(dstdir, fname)
+				os.remove(fullpath)
 		instance = file_batch_move(srcdir, dstdir, list_file, 0)	#0 means symbolic move
 		instance.run()
 		del instance
