@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if test $# -lt 3
+if test $# -lt 4
 then
 	echo "Usage:"
 	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF PARAMETERS"
@@ -11,16 +11,14 @@ then
 	echo
 	echo "RUNCODE controls which part to turn on"
 	echo " 1.codense2db 2.cluster_stat.py"
-	echo " 3.gene_stat 4.p_gene_analysis"
-	echo " 5.gene_p_map_redundancy 6.connectivity_original"
+	echo " 3.gene_stat 4.cluster_stat2.sh"
 	echo 
-	echo " First digit is ALGORITHM type."
+	echo " 1st digit is ALGORITHM type."
 	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
-	echo " Second digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
+	echo " 2nd digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
 	echo "   3(MpiClusterGeneStat.py, nodes assigned by qsub)"
 	echo "   if MpiClusterGeneStat.py is on, gene_stat.py will be off"
-	echo " Fourth digit: two choices, 1(p_gene_lm + p_gene_analysis)"
-	echo "   2(p_gene_analysis)"
+	echo " 4th digit: 1(qsub) 2(direct run)"
 	exit
 fi
 
@@ -33,8 +31,6 @@ type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
 type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
-type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
-type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 splat_result_table=splat_$2
 mcl_result_table=mcl_$2
 #05-19-05 cluster_stat goes to a file
@@ -76,7 +72,7 @@ case "$type_1" in
 esac
 
 #05-19-05 cluster_stat goes to a file
-
+date
 
 case "$type_2" in
 	1)	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
@@ -88,6 +84,8 @@ case "$type_2" in
 	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
 esac
 
+date
+
 if [ $type_2 != "2" ]; then
 	if [ $type_3 = "1" ]; then
 		#05-19-05 cluster_stat goes to a file
@@ -98,27 +96,15 @@ else
 	echo "MpiClusterGeneStat.py is turned on, so gene_stat.py off"
 fi
 
+date
 
+echo "######## cluster_stat2.sh######"
 case "$type_4" in
-	1)	echo ssh node27 ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff
-		ssh node27 ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff
-		#p_gene_lm calls rpy.r, which is banned by qsub. run it elsewhere
-		echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
-		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
-	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
-		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
-	*)	echo "No p_gene_analysis and/or p_gene_lm";;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 000110  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 000110  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 000110 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $input_file 000110 $acc_cutoff;;
+	*)	echo "cluster_stat.sh skipped";;
 esac
 
-
-if [ $type_5 = "1" ]; then
-	echo ~/script/annot/bin/gene_p_map_redundancy.py -k $schema -t $p_gene_table -n $gene_p_table -c
-	~/script/annot/bin/gene_p_map_redundancy.py -k $schema -t $p_gene_table -n $gene_p_table -c
-fi
-
-
-if [ $type_6 = "1" ]; then
-	echo ~/script/annot/bin/connectivity_original.py -k $schema -c -t $mcl_result_table
-	~/script/annot/bin/connectivity_original.py -k $schema -c -t $mcl_result_table
-fi
 date
