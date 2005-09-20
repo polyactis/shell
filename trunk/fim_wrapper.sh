@@ -18,7 +18,7 @@ then
 	echo "3 means qsub + no_cc"
 	echo "4 means 30 nodes + no_cc"
 	echo
-	echo "cluster_stat.sh: 1 use qsub, 2 just run"
+	echo "cluster_stat.sh: 1 use qsub(nodes by $NHOSTS), 2 just run"
 	echo
 	echo "OUTPUTSFX is attached to the default outputfilename"
 	exit
@@ -80,10 +80,10 @@ esac
 
 date
 
-echo "########IV. cluster_stat_sc on connected components######"
+echo "########IV. cluster_stat on connected components######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 320110  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330110  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330110 $acc_cutoff;;
 	2)	echo ~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff
 		~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff;;
 	*)	echo "cluster_stat.sh skipped";;
