@@ -11,14 +11,17 @@ then
 	echo "	The three digits correspond to "
 	echo "	1.PreFimInput.py 2.fim_closed "
 	echo "	3.MpiFromDatasetSignatureToPattern.py 4.cluster_stat.sh"
+	echo "  (dense) 5.MpiCrackSplat.py 6.cluster_stat.sh"
+	echo
 	echo "1 means enable, 0 means disable"
 	echo
-	echo "Mpi... has two modes. 1 means using qsub assigned"
+	echo "3rd digit modes. 1 means using qsub assigned"
 	echo "2 means to use 30 nodes in ~/hostfile"
 	echo "3 means qsub + no_cc"
 	echo "4 means 30 nodes + no_cc"
 	echo
 	echo "cluster_stat.sh: 1 use qsub(nodes by $NHOSTS), 2 just run"
+	echo "5th digit: 1.(qsub) 2.(direct run)"
 	echo
 	echo "OUTPUTSFX is attached to the default outputfilename"
 	exit
@@ -33,6 +36,8 @@ type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
 type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
+type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
+type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 outputsfx=''
 while test -n "$6"
@@ -80,14 +85,39 @@ esac
 
 date
 
+
 echo "########IV. cluster_stat on connected components######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330110  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330110 $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff
-		~/script/shell/cluster_stat.sh $schema $op 320110 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330111 $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema $op 320212 $acc_cutoff
+		~/script/shell/cluster_stat.sh $schema $op 320212 $acc_cutoff;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
 
 date
 
+
+dfinal_output=$final_output\d50
+echo "########V. dense clustering ######"
+case "$type_5" in
+	1)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output
+		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output;;
+	2)	echo mpirun.mpich -np 10 -machinefile $TMPDIR/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output
+		mpirun.mpich -np 10 -machinefile $TMPDIR/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output;;
+	*)	echo "MpiCrackSplat.py skipped";;
+esac
+
+date
+
+dop=$op\d50
+echo "########VI. cluster_stat on dense clusters######"
+case "$type_6" in
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop 330111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop 330111 $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema $dop 320212 $acc_cutoff
+		~/script/shell/cluster_stat.sh $schema $dop 320212 $acc_cutoff;;
+	*)	echo "cluster_stat.sh skipped";;
+esac
+
+date
