@@ -3,15 +3,17 @@
 if test $# -lt 4
 then
 	echo "Usage:"
-	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF PARAMETERS"
+	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF MAX_SIZE PARAMETERS"
 	echo
 	echo "This is a script linking all stat programs"
-	echo "PARAMETERS are passed to cluster_stat.py"
-	echo "Except -k -s -p -b -w -u, others are ok, like -n and -e."
+	echo "  MAX_SIZE is 40 if not given"
+	echo "  PARAMETERS are passed to cluster_stat.py"
+	echo "    Except -k -s -p -b -w -u, others are ok, like -n and -e."
 	echo
 	echo "RUNCODE controls which part to turn on"
 	echo " 1.codense2db 2.cluster_stat.py"
 	echo " 3.gene_stat 4.cluster_stat2.sh"
+	echo " 5.PredictionFilterByClusterSize.py 6.cluster_stat2.sh"
 	echo 
 	echo " 1st digit is ALGORITHM type."
 	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
@@ -19,6 +21,7 @@ then
 	echo "   3(MpiClusterGeneStat.py, nodes assigned by qsub)"
 	echo "   if MpiClusterGeneStat.py is on, gene_stat.py will be off"
 	echo " 4th digit: 1(qsub) 2(direct run)"
+	echo " 6th digit: 1(qsub) 2(direct run)"
 	exit
 fi
 
@@ -26,32 +29,38 @@ schema=$1
 input_file=$2
 runcode=$3
 acc_cutoff=$4
+max_size=40
+if test -n "$5"; then
+	max_size=$5
+fi
+
+parameter=''
+while test -n "$6"
+do
+parameter=$parameter' '$6
+shift
+done
 
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
 type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
-splat_result_table=splat_$2
-mcl_result_table=mcl_$2
-#05-19-05 cluster_stat goes to a file
-cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$2
-p_gene_table=p_gene_$2_e5
+type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
+type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
+
+splat_result_table=splat_$input_file
+mcl_result_table=mcl_$input_file
+cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$input_file
+p_gene_table=p_gene_$input_file\_e5
 acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
-lm_table=lm_$2\_e5_a$acc_int
-gene_p_table=gene_p_$2\_e5_a$acc_int
+lm_table=lm_$input_file\_e5_a$acc_int
+gene_p_table=gene_p_$input_file\_e5_a$acc_int
+
 gene_id2no=$schema\_gene_id2no
 echo $gene_id2no
 
-
-parameter=''
-while test -n "$5"
-do
-parameter=$parameter' '$5
-shift
-done
-
 echo " RUNCODE is $runcode "
-echo "parameter to cluster_stat.py is $parameter"
+echo " parameter to cluster_stat.py is $parameter"
 
 
 #the python library path
@@ -100,11 +109,35 @@ date
 
 echo "######## cluster_stat2.sh######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 000110  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 000110  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 000110 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $input_file 000110 $acc_cutoff;;
-	*)	echo "cluster_stat.sh skipped";;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff;;
+	*)	echo "cluster_stat2.sh skipped";;
+esac
+
+date
+
+echo "###### PredictionFilterByClusterSize.py #####"
+input_file=$input_file\ms$max_size	#input_file changed
+splat_view=splat_$input_file
+mcl_view=mcl_$input_file
+p_gene_view=p_gene_$input_file\_e5
+case "$type_5" in
+	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -s $splat_result_table -m $mcl_result_table -p $p_gene_table -t $splat_view -n $mcl_view -q $p_gene_view -c -e $max_size
+		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -s $splat_result_table -m $mcl_result_table -p $p_gene_table -t $splat_view -n $mcl_view -q $p_gene_view -c -e $max_size;;
+	*)	echo "PredictionFilterByClusterSize.py skipped";;
+esac
+
+date
+
+echo "######## cluster_stat2.sh######"
+case "$type_6" in
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff;;
+	*)	echo "cluster_stat2.sh skipped";;
 esac
 
 date
