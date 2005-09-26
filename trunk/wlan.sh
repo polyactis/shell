@@ -13,10 +13,10 @@ echo "Which essid:"
 echo "1. USC"
 echo "2. Math"
 echo "3. zzhao"
-echo "4. hto-ww"
+echo "4. portland"
 echo "5. hto_eth0"
 echo "6. w1141"
-echo "7. LilianLiu"
+echo "7. default"
 read a
 if [ $a = "1" ]; then
 	route del default gw src
@@ -43,8 +43,8 @@ fi
 
 if [ $a = "4" ]; then
 	route del default gw src
-	iwconfig $interface essid "hto-ww"
-	#ifconfig eth0 down
+	iwconfig $interface essid "portland"
+	iwconfig $interface key C758C65F16616BA8D2489C67BE
 	dhclient $interface
 fi
 
@@ -64,7 +64,7 @@ fi
 
 if [ $a = "7" ]; then
 	route del default gw src
-	iwconfig $interface essid "LilianLiu"
-	iwpriv $interface mode 3
+	iwconfig $interface essid "default"
+	iwconfig $interface key open
 	dhclient $interface
 fi
