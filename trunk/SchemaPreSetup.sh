@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if test $# -ne 3
+if test $# -ne 4
 then
 	echo "Usage:"
-	echo "    SchemaPreSetup.sh ORGANISM SCHEMA RUNCODE"
+	echo "    SchemaPreSetup.sh ORGANISM SCHEMA GENE_FREQ RUNCODE"
 	echo
 	echo "This is a script to setup go functions and gene table."
 	echo
@@ -13,13 +13,13 @@ then
 	echo "	5.gene_go_functions.py 6.graph_reorganize.py"
 	echo "	7.prepare_gene_id2no.py"
 	echo
-	echo "1st digit(gene_table.py):1. union 2.intersection"
 	exit
 fi
 
 organism=$1
 schema=$2
-runcode=$3
+gene_freq=$3
+runcode=$4
 #05-21-05 use runcode to control which step is necessary
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
@@ -40,10 +40,8 @@ gph_dir_gspan=~/gph_result/$schema\_gspan
 source ~/.bash_profile
 date
 case "$type_1" in
-	1)	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c -u $datasets_dir
-		~/script/annot/bin/gene_table.py -k $schema -g $organism -c -u $datasets_dir;;
-	2)	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir
-		~/script/annot/bin/gene_table.py -k $schema -g $organism -c $datasets_dir;;
+	1)	echo ~/script/annot/bin/gene_table.py -k $schema -g $organism -c -m $gene_freq $datasets_dir
+		~/script/annot/bin/gene_table.py -k $schema -g $organism -c -m $gene_freq $datasets_dir;;
 	*)	echo "gene_table.py skipped";;
 esac
 
