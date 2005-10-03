@@ -7,6 +7,7 @@ echo "4. app1"
 echo "5. app2"
 echo "6. zhoulab"
 echo "7. gan"
+echo "8. 10.113.0.1"
 read a
 if [ $a = "1" ]; then
 	ssh hto-pc44.usc.edu -l yh
@@ -34,4 +35,8 @@ fi
 
 if [ $a = "7" ]; then
 	ssh yh@gan.usc.edu
+fi
+
+if [ $a = "8" ]; then
+	ssh yh@10.113.0.1
 fi
