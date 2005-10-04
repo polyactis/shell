@@ -51,6 +51,14 @@ fim_output=/scratch/00/yuhuang/tmp/$schema\m$support\x$max_support\_o
 op=$schema\m$support\x$max_support$outputsfx
 final_output=~/bin/hhu_clustering/data/output/netmine/$op
 
+check_exit_status() {
+	return_code=$?
+	if [ $return_code != "0" ]; then
+		echo "Return code non-zero:"$return_code
+		exit
+	fi
+}
+
 #the python library path
 source ~/.bash_profile
 date
@@ -61,12 +69,16 @@ if [ $type_1 = "1" ]; then
 
 fi
 
+check_exit_status
+
 date
 
 if [ $type_2 = "1" ]; then
-	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
-	~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
+	echo ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
+	ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
 fi
+
+check_exit_status
 
 date
 
@@ -83,6 +95,8 @@ case "$type_3" in
 	*)	echo "netmine_wrapper.py skipped";;
 esac
 
+check_exit_status
+
 date
 
 
@@ -94,6 +108,8 @@ case "$type_4" in
 		~/script/shell/cluster_stat.sh $schema $op 320212 $acc_cutoff;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
+
+check_exit_status
 
 date
 
@@ -107,6 +123,8 @@ case "$type_5" in
 		mpirun.mpich -np 10 -machinefile $TMPDIR/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output;;
 	*)	echo "MpiCrackSplat.py skipped";;
 esac
+
+check_exit_status
 
 date
 
