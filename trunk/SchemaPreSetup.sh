@@ -36,6 +36,14 @@ datasets_dir=~/datasets/$schema
 gph_dir=~/gph_result/$schema
 gph_dir_gspan=~/gph_result/$schema\_gspan
 
+check_exit_status() {
+	date
+	return_code=$?
+	if [ $return_code != "0" ]; then
+		echo "Return code non-zero:"$return_code
+		exit
+	fi
+}
 #the python library path
 source ~/.bash_profile
 date
@@ -45,31 +53,43 @@ case "$type_1" in
 	*)	echo "gene_table.py skipped";;
 esac
 
+check_exit_status
+
 if [ $type_2 = "1" ]; then
 	echo ~/script/annot/bin/find_unknown_genes.py -g $organism $unknown_file
 	~/script/annot/bin/find_unknown_genes.py -g $organism $unknown_file
 fi
+
+check_exit_status
 
 if [ $type_3 = "1" ]; then
 	echo ~/script/annot/bin/GO/go_informative_node.py -k $schema -b \>$go_file
 	~/script/annot/bin/GO/go_informative_node.py -k $schema -b >$go_file
 fi
 
+check_exit_status
+
 if [ $type_4 = "1" ]; then
 	echo ~/script/annot/bin/go_bioprocess.py -k $schema -p min -u $unknown_file -c $go_file
 	~/script/annot/bin/go_bioprocess.py -k $schema -p min -u $unknown_file -c $go_file
 fi
+
+check_exit_status
 
 if [ $type_5 = "1" ]; then
 	echo ~/script/annot/bin/gene_go_functions.py -k $schema -c
 	~/script/annot/bin/gene_go_functions.py -k $schema -c
 fi
 
+check_exit_status
+
 if [ $type_6 = "1" ]; then
 	#05-20-05 add graph_reorganize.py
 	echo ~/script/annot/bin/graph_reorganize.py -k $schema -t1 -g $organism $gph_dir $gph_dir_gspan 
 	~/script/annot/bin/graph_reorganize.py -k $schema -t1 -g $organism $gph_dir $gph_dir_gspan 
 fi
+
+check_exit_status
 
 if [ $type_7 = "1" ]; then
 	#05-20-05 add prepare_gene_id2no.py
@@ -78,4 +98,4 @@ if [ $type_7 = "1" ]; then
 	~/script/annot/bin/prepare_gene_id2no.py -k $schema ~/bin/hhu_clustering/$gene_id2no
 fi
 
-date
+check_exit_status
