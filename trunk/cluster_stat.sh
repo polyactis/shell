@@ -62,6 +62,14 @@ echo $gene_id2no
 echo " RUNCODE is $runcode "
 echo " parameter to cluster_stat.py is $parameter"
 
+check_exit_status() {
+	date
+	return_code=$?
+	if [ $return_code != "0" ]; then
+		echo "Return code non-zero:"$return_code
+		exit
+	fi
+}
 
 #the python library path
 source ~/.bash_profile
@@ -80,12 +88,13 @@ case "$type_1" in
 	*)	echo "codense2db skipped";;
 esac
 
+check_exit_status
+
 #05-19-05 cluster_stat goes to a file
-date
 
 case "$type_2" in
-	1)	echo ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
-		ssh node24 ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter;;
+	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
+		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter;;
 	2)	echo mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
 		mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
 	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
@@ -93,7 +102,8 @@ case "$type_2" in
 	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
 esac
 
-date
+check_exit_status
+
 
 if [ $type_2 != "2" ]; then
 	if [ $type_3 = "1" ]; then
@@ -105,18 +115,20 @@ else
 	echo "MpiClusterGeneStat.py is turned on, so gene_stat.py off"
 fi
 
-date
+check_exit_status
+
 
 echo "######## cluster_stat2.sh######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff;;
 	*)	echo "cluster_stat2.sh skipped";;
 esac
 
-date
+check_exit_status
+
 
 echo "###### PredictionFilterByClusterSize.py #####"
 input_file=$input_file\ms$max_size	#input_file changed
@@ -129,15 +141,16 @@ case "$type_5" in
 	*)	echo "PredictionFilterByClusterSize.py skipped";;
 esac
 
-date
+check_exit_status
+
 
 echo "######## cluster_stat2.sh######"
 case "$type_6" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/cluster_stat2.sh $schema $input_file 111  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $input_file 112 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff;;
 	*)	echo "cluster_stat2.sh skipped";;
 esac
 
-date
+check_exit_status
