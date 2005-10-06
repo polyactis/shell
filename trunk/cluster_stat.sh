@@ -7,14 +7,16 @@ then
 	echo
 	echo "This is a script linking all stat programs"
 	echo "  MAX_SIZE is 40 if not given"
-	echo "  PARAMETERS are passed to cluster_stat.py"
-	echo "    Except -k -s -p -b -w -u, others are ok, like -n and -e."
+	echo "  PARAMETERS are passed to PredictionFilterByClusterSize.py"
+	echo "    Except -e(MAX_SIZE), like -u, -p, -m"
 	echo
 	echo "RUNCODE controls which part to turn on"
 	echo " 1.codense2db 2.cluster_stat.py"
 	echo " 3.gene_stat 4.cluster_stat2.sh"
 	echo " 5.PredictionFilterByClusterSize.py 6.cluster_stat2.sh"
 	echo 
+	echo "Before 5, PARAMETERS is processed and attached to new INPUT_FILE"
+	echo
 	echo " 1st digit is ALGORITHM type."
 	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
 	echo " 2nd digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
@@ -60,7 +62,6 @@ gene_id2no=$schema\_gene_id2no
 echo $gene_id2no
 
 echo " RUNCODE is $runcode "
-echo " parameter to cluster_stat.py is $parameter"
 
 check_exit_status() {
 	date
@@ -93,8 +94,8 @@ check_exit_status
 #05-19-05 cluster_stat goes to a file
 
 case "$type_2" in
-	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter
-		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0 $parameter;;
+	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0
+		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0;;
 	2)	echo mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
 		mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
 	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
@@ -131,13 +132,10 @@ check_exit_status
 
 
 echo "###### PredictionFilterByClusterSize.py #####"
-input_file=$input_file\ms$max_size	#input_file changed
-splat_view=splat_$input_file
-mcl_view=mcl_$input_file
-p_gene_view=p_gene_$input_file\_e5
+new_input_file=$input_file\ms$max_size`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
 case "$type_5" in
-	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -s $splat_result_table -m $mcl_result_table -p $p_gene_table -t $splat_view -n $mcl_view -q $p_gene_view -c -e $max_size
-		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -s $splat_result_table -m $mcl_result_table -p $p_gene_table -t $splat_view -n $mcl_view -q $p_gene_view -c -e $max_size;;
+	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c -e $max_size $parameter
+		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c -e $max_size $parameter;;
 	*)	echo "PredictionFilterByClusterSize.py skipped";;
 esac
 
@@ -146,10 +144,10 @@ check_exit_status
 
 echo "######## cluster_stat2.sh######"
 case "$type_6" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file 1111  $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file 1111  $acc_cutoff;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $new_input_file 1112 $acc_cutoff
+		~/script/shell/cluster_stat2.sh $schema $new_input_file 1112 $acc_cutoff;;
 	*)	echo "cluster_stat2.sh skipped";;
 esac
 
