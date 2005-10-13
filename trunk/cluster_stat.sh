@@ -1,21 +1,22 @@
 #!/bin/sh
 
-if test $# -lt 4
+if test $# -lt 5
 then
 	echo "Usage:"
-	echo "    cluster_stat.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF MAX_SIZE PARAMETERS"
+	echo "    cluster_stat.sh SCHEMA INPUT_FILE LM_BIT ACC_CUTOFF RUNCODE NEWSFX PARAMETERS"
 	echo
 	echo "This is a script linking all stat programs"
-	echo "  MAX_SIZE is 40 if not given"
+	echo "  NEWSFX is to be attached to the INPUT_FILE after step 4."
+	echo "	  if NEWSFX=='n', it'll be ignored"
 	echo "  PARAMETERS are passed to PredictionFilterByClusterSize.py"
-	echo "    Except -e(MAX_SIZE), like -u, -p, -m"
+	echo "    like -u, -p, -m, -a"
+	echo 
+	echo "Before 5, PARAMETERS is processed and attached to new INPUT_FILE"
 	echo
 	echo "RUNCODE controls which part to turn on"
 	echo " 1.codense2db 2.cluster_stat.py"
 	echo " 3.gene_stat 4.cluster_stat2.sh"
 	echo " 5.PredictionFilterByClusterSize.py 6.cluster_stat2.sh"
-	echo 
-	echo "Before 5, PARAMETERS is processed and attached to new INPUT_FILE"
 	echo
 	echo " 1st digit is ALGORITHM type."
 	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
@@ -29,17 +30,14 @@ fi
 
 schema=$1
 input_file=$2
-runcode=$3
+lm_bit=$3
 acc_cutoff=$4
-max_size=40
-if test -n "$5"; then
-	max_size=$5
-fi
-
+runcode=$5
+newsfx=$6
 parameter=''
-while test -n "$6"
+while test -n "$7"
 do
-parameter=$parameter' '$6
+parameter=$parameter' '$7
 shift
 done
 
@@ -54,9 +52,6 @@ splat_result_table=splat_$input_file
 mcl_result_table=mcl_$input_file
 cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$input_file
 p_gene_table=p_gene_$input_file\_e5
-acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
-lm_table=lm_$input_file\_e5_a$acc_int
-gene_p_table=gene_p_$input_file\_e5_a$acc_int
 
 gene_id2no=$schema\_gene_id2no
 echo $gene_id2no
@@ -121,10 +116,10 @@ check_exit_status
 
 echo "######## cluster_stat2.sh######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file 1111  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $input_file 1112 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1111
+		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1111;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1112
+		~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1112;;
 	*)	echo "cluster_stat2.sh skipped";;
 esac
 
@@ -132,10 +127,13 @@ check_exit_status
 
 
 echo "###### PredictionFilterByClusterSize.py #####"
-new_input_file=$input_file\ms$max_size`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
+if [ $newsfx = 'n' ]; then	#'n' is for nothing
+	newsfx=''
+fi
+new_input_file=$input_file$newsfx`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
 case "$type_5" in
-	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c -e $max_size $parameter
-		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c -e $max_size $parameter;;
+	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c $parameter
+		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c $parameter;;
 	*)	echo "PredictionFilterByClusterSize.py skipped";;
 esac
 
@@ -144,10 +142,10 @@ check_exit_status
 
 echo "######## cluster_stat2.sh######"
 case "$type_6" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file 1111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file 1111  $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $new_input_file 1112 $acc_cutoff
-		~/script/shell/cluster_stat2.sh $schema $new_input_file 1112 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1111
+		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1111;;
+	2)	echo ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1112
+		~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1112;;
 	*)	echo "cluster_stat2.sh skipped";;
 esac
 

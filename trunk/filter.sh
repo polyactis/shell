@@ -1,8 +1,8 @@
 #!/bin/sh
-if test $# -lt 4
+if test $# -ne 5
 then
 	echo "Usage:"
-	echo "    filter.sh SCHEMA INPUT_FILE ACC_CUTOFF RUNCODE"
+	echo "    filter.sh SCHEMA INPUT_FILE LM_BIT ACC_CUTOFF RUNCODE"
 	echo
 	echo "Gets the prediction clusters out and do tf analysis"
 	echo
@@ -16,21 +16,27 @@ fi
 
 schema=$1
 input_file=$2
-acc_cutoff=$3
-runcode=$4
+lm_bit=$3
+acc_cutoff=$4
+runcode=$5
 
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`     #{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 
 
-acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
 mcl_table=mcl_$input_file
 p_gene_table=p_gene_$input_file\_e5
-gene_p_table=gene_p_$input_file\_e5_a$acc_int
-good_cluster_table=good_cl_$input_file\_e5_a$acc_int
-cluster_bs_table=cluster_bs_$input_file\_e5_a$acc_int
+acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
+if [ $lm_bit = "111" ]; then
+	lm_suffix=$input_file\_e5_a$acc_int	#backward compatible
+else
+	lm_suffix=$input_file\_e5_$lm_bit\a$acc_int
+fi
+lm_table=lm_$lm_suffix
+gene_p_table=gene_p_$lm_suffix
+good_cluster_table=good_cl_$lm_suffix
+cluster_bs_table=cluster_bs_$lm_suffix
 
-env	#10-02-05 try to see why threaded-program doesn't work in qsub system
 
 check_exit_status() {
 	return_code=$?
@@ -56,8 +62,8 @@ check_exit_status
 date
 
 case "$type_2" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/mpibs_stat.sh $schema $input_file $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/mpibs_stat.sh $schema $input_file $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options ~/script/shell/mpibs_stat.sh $schema $input_file $lm_bit $acc_cutoff
+		ssh app2 qsub -@ ~/.qsub.options ~/script/shell/mpibs_stat.sh $schema $input_file $lm_bit $acc_cutoff;;
 	2)	echo mpirun -np 5 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterBsStat.py -k $schema -g $good_cluster_table -l  $cluster_bs_table -c -n
 		mpirun -np 5 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterBsStat.py -k $schema -g $good_cluster_table -l  $cluster_bs_table -c -n;;
 	*)	echo "MpiClusterBsStat.py skipped";;

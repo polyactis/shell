@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if test $# -lt 5
+if test $# -lt 6
 then
 	echo "Usage:"
-	echo "    fim_wrapper.sh SCHEMA MIN_SUPPORT MAX_SUPPORT RUNCODE ACC_CUTOFF OUTPUTSFX"
+	echo "    fim_wrapper.sh SCHEMA MIN_SUPPORT MAX_SUPPORT LM_BIT ACC_CUTOFF RUNCODE OUTPUTSFX"
 	echo 
 	echo "This is batch script for fim_closed"
 	echo
@@ -30,8 +30,9 @@ fi
 schema=$1
 support=$2
 max_support=$3
-runcode=$4
+lm_bit=$4
 acc_cutoff=$5
+runcode=$6
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
@@ -40,9 +41,9 @@ type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
 type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 outputsfx=''
-while test -n "$6"
+while test -n "$7"
 do
-outputsfx=$outputsfx$6
+outputsfx=$outputsfx$7
 shift
 done
 
@@ -102,10 +103,10 @@ date
 
 echo "########IV. cluster_stat on connected components######"
 case "$type_4" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op 330111 $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat.sh $schema $op 320212 $acc_cutoff
-		~/script/shell/cluster_stat.sh $schema $op 320212 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff 330111
+		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff 330111;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff  320212
+		~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff 320212;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
 
@@ -131,10 +132,10 @@ date
 dop=$op\d50
 echo "########VI. cluster_stat on dense clusters######"
 case "$type_6" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop 330111  $acc_cutoff
-		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop 330111 $acc_cutoff;;
-	2)	echo ~/script/shell/cluster_stat.sh $schema $dop 320212 $acc_cutoff
-		~/script/shell/cluster_stat.sh $schema $dop 320212 $acc_cutoff;;
+	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 330111
+		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NHOSTS ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 330111;;
+	2)	echo ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 320212
+		~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 320212;;
 	*)	echo "cluster_stat.sh skipped";;
 esac
 

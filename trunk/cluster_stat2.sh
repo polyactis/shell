@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if test $# -lt 4
+if test $# -lt 5
 then
 	echo "Usage:"
-	echo "    cluster_stat2.sh SCHEMA INPUT_FILE RUNCODE ACC_CUTOFF"
+	echo "    cluster_stat2.sh SCHEMA INPUT_FILE LM_BIT ACC_CUTOFF RUNCODE"
 	echo
 	echo "This is a script linking all stat programs"
 	echo
@@ -19,8 +19,9 @@ fi
 
 schema=$1
 input_file=$2
-runcode=$3
+lm_bit=$3
 acc_cutoff=$4
+runcode=$5
 
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
@@ -31,9 +32,16 @@ splat_result_table=splat_$input_file
 mcl_result_table=mcl_$input_file
 cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$input_file
 p_gene_table=p_gene_$input_file\_e5
+
+#other scripts don't process ACC_CUTOFF or LM_BIT
 acc_int=`echo $acc_cutoff|awk '{print $0*100}'`
-lm_table=lm_$input_file\_e5_a$acc_int
-gene_p_table=gene_p_$input_file\_e5_a$acc_int
+if [ $lm_bit = "111" ]; then
+	lm_suffix=$input_file\_e5_a$acc_int	#backward compatible
+else
+	lm_suffix=$input_file\_e5_$lm_bit\a$acc_int
+fi
+lm_table=lm_$lm_suffix
+gene_p_table=gene_p_$lm_suffix
 
 
 echo " RUNCODE is $runcode "
@@ -53,8 +61,8 @@ source ~/.bash_profile
 date
 
 case "$type_1" in
-	1)	echo ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff
-		ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $acc_cutoff;;
+	1)	echo ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $lm_bit $acc_cutoff
+		ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $lm_bit $acc_cutoff;;
 	*)	echo "No p_gene_lm.sh";;
 esac
 
@@ -82,10 +90,10 @@ fi
 check_exit_status
 
 case "$type_4" in
-	1)	echo ~/script/shell/filter.sh $schema $input_file $acc_cutoff 11
-		~/script/shell/filter.sh $schema $input_file $acc_cutoff 11;;
-	2)	echo ~/script/shell/filter.sh $schema $input_file $acc_cutoff 22
-		~/script/shell/filter.sh $schema $input_file $acc_cutoff 22;;
+	1)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 11
+		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 11;;
+	2)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 22
+		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 22;;
 	*)	echo "filter.sh skipped";;	
 esac
 
