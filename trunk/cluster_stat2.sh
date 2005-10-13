@@ -12,7 +12,7 @@ then
 	echo " 3.gene_p_map_redundancy 4.filter.sh"
 	echo 
 	echo " 2nd digit: 1(from lm_table)"
-	echo "   2(p_value 0.01)"
+	echo "   2(p_value 0.01) 3(p_value 1)"
 	echo " 4th digit: 1(qsub), 2(direct run)"
 	exit
 fi
@@ -65,6 +65,8 @@ case "$type_2" in
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0 -l $lm_table -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
+	3)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 1 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
+		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 1 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	*)	echo "No p_gene_analysis.py";;
 
 esac
