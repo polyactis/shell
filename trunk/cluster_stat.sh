@@ -50,6 +50,7 @@ type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 splat_result_table=splat_$input_file
 mcl_result_table=mcl_$input_file
+pattern_table=pattern_$input_file #10-14-05
 cluster_stat_table=/scratch/00/yuhuang/cluster_stat/cluster_$input_file
 p_gene_table=p_gene_$input_file\_e5
 
@@ -73,14 +74,14 @@ date
 cd ~/bin/hhu_clustering/data/output/netmine/
 
 case "$type_1" in
-	1)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -t $splat_result_table -m $mcl_result_table $input_file
-		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -t $splat_result_table -m $mcl_result_table $input_file;;
-	2)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $input_file
-		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -t $splat_result_table -m $mcl_result_table $input_file;;
-	3)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -y3 $input_file
-		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -y3 $input_file;;
-	4)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table $input_file
-		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table $input_file;;
+	1)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file
+		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file;;
+	2)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file
+		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y2 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file;;
+	3)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table -y3 $input_file
+		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table -y3 $input_file;;
+	4)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table $input_file
+		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table $input_file;;
 	*)	echo "codense2db skipped";;
 esac
 
