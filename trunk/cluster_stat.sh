@@ -6,17 +6,13 @@ then
 	echo "    cluster_stat.sh SCHEMA INPUT_FILE LM_BIT ACC_CUTOFF RUNCODE NEWSFX PARAMETERS"
 	echo
 	echo "This is a script linking all stat programs"
-	echo "  NEWSFX is to be attached to the INPUT_FILE after step 4."
-	echo "	  if NEWSFX=='n', it'll be ignored"
-	echo "  PARAMETERS are passed to PredictionFilterByClusterSize.py"
+	echo "  NEWSFX and PARAMETERS are passed to prediction_filter.sh"
 	echo "    like -u, -p, -m, -a"
-	echo 
-	echo "Before 5, PARAMETERS is processed and attached to new INPUT_FILE"
 	echo
 	echo "RUNCODE controls which part to turn on"
 	echo " 1.codense2db 2.cluster_stat.py"
 	echo " 3.gene_stat 4.cluster_stat2.sh"
-	echo " 5.PredictionFilterByClusterSize.py 6.cluster_stat2.sh"
+	echo " 5.prediction_filter.sh"
 	echo
 	echo " 1st digit is ALGORITHM type."
 	echo "   1(copath), 2(codense), 3(fim), 4(biclustering), 0(skip)"
@@ -24,7 +20,7 @@ then
 	echo "   3(MpiClusterGeneStat.py, nodes assigned by qsub)"
 	echo "   if MpiClusterGeneStat.py is on, gene_stat.py will be off"
 	echo " 4th digit: 1(qsub) 2(direct run)"
-	echo " 6th digit: 1(qsub) 2(direct run)"
+	echo " 5th digit: 1(qsub) 2(direct run)"
 	exit
 fi
 
@@ -46,7 +42,6 @@ type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
 type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
 type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
-type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 splat_result_table=splat_$input_file
 mcl_result_table=mcl_$input_file
@@ -127,27 +122,15 @@ esac
 check_exit_status
 
 
-echo "###### PredictionFilterByClusterSize.py #####"
-if [ $newsfx = 'n' ]; then	#'n' is for nothing
-	newsfx=''
-fi
-new_input_file=$input_file$newsfx`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
+echo "###### prediction_filter.sh #####"
+app2=176.16.0.5	#10-16-05 it seems dns-hard to ssh app2 from node
 case "$type_5" in
-	1)	echo ~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c $parameter
-		~/script/annot/bin/PredictionFilterByClusterSize.py -k $schema -i $input_file -j $new_input_file  -c $parameter;;
-	*)	echo "PredictionFilterByClusterSize.py skipped";;
+	1)	echo ssh $app2 qsub -@ ~/.qsub.options -pe mpich 10 ~/script/shell/prediction_filter.sh $schema $input_file $lm_bit $acc_cutoff 11 $newsfx $parameter
+		ssh $app2 qsub -@ ~/.qsub.options -pe mpich 10 ~/script/shell/prediction_filter.sh $schema $input_file $lm_bit $acc_cutoff 11 $newsfx $parameter;;
+	2)	echo ~/script/shell/prediction_filter.sh $schema $input_file $lm_bit $acc_cutoff 22 $newsfx $parameter
+		~/script/shell/prediction_filter.sh $schema $input_file $lm_bit $acc_cutoff 22 $newsfx $parameter;;
+	*)	echo "prediction_filter.sh skipped";;
 esac
 
 check_exit_status
 
-
-echo "######## cluster_stat2.sh######"
-case "$type_6" in
-	1)	echo ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1111
-		ssh app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1111;;
-	2)	echo ~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1112
-		~/script/shell/cluster_stat2.sh $schema $new_input_file $lm_bit $acc_cutoff 1112;;
-	*)	echo "cluster_stat2.sh skipped";;
-esac
-
-check_exit_status
