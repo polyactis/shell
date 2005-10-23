@@ -1,0 +1,40 @@
+#!/bin/sh -x
+
+#
+# Accept everything, but log and account for many of the interesting packets
+#
+
+interface=$1
+in="in-$1"
+out="out-$1"
+
+function accept_try_log {
+	iptables -N accept_try_log || return
+	#iptables -m limit -A accept_try_log --limit 120/minute -j LOG --log-prefix "ACCEPT "
+	iptables -A accept_try_log -j ACCEPT
+}
+
+
+accept_try_log
+
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+iptables -D INPUT -i $interface -j $in || true
+iptables -D OUTPUT -o $interface -j $out || true
+
+
+iptables -N $in || iptables -F $in
+iptables -N $out || iptables -F $out
+
+# Just accept everything, but in own chain for accounting purposes
+# Log TCP syn packets
+
+iptables -A $in -p tcp --syn -j accept_try_log
+iptables -A $out -p tcp --syn -j accept_try_log
+iptables -A $in -j ACCEPT
+iptables -A $out -j ACCEPT
+
+iptables -I INPUT -i $interface -j $in
+iptables -I OUTPUT -o $interface -j $out

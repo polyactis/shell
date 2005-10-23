@@ -1,0 +1,145 @@
+#!/bin/sh -x
+
+#
+# Allow all outgoing packets, but only incoming TCP SYN packets in the
+# SERVICES list
+
+SERVICES="ssh 5432 2401"
+
+
+interface=$1
+in="in-$1"
+out="out-$1"
+
+function accept_log {
+	iptables -N accept_log || return
+	#iptables -A accept_log -j LOG --log-prefix "ACCEPT "
+	iptables -A accept_log -j ACCEPT
+}
+
+function accept_log6 {
+	ip6tables -N accept_log || return
+	#ip6tables -A accept_log -j LOG --log-prefix "ACCEPT "
+	ip6tables -A accept_log -j ACCEPT
+}
+
+function limited_accept_log {
+	iptables -N limited_accept_log || return
+	iptables -m limit -A limited_accept_log --limit 240/minute -j accept_log
+	#iptables -m limit -A limited_accept_log --limit 1/second -j LOG --log-prefix "LIMIT_DROP "
+	iptables -A limited_accept_log -j DROP
+}
+
+function limited_accept_log6 {
+	ip6tables -N limited_accept_log || return
+	ip6tables -m limit -A limited_accept_log --limit 5/second -j accept_log
+	#ip6tables -m limit -A limited_accept_log --limit 1/second -j LOG --log-prefix "LIMIT_DROP "
+	ip6tables -A limited_accept_log -j DROP
+}
+
+function reject_log {
+	iptables -N reject_log || return
+	#iptables -m limit -A reject_log --limit 1/second -j LOG --log-prefix "REJECT "
+	iptables -A reject_log -j REJECT
+}
+
+function drop_log {
+	iptables -N drop_log || return
+	#iptables -m limit -A drop_log --limit 1/second -j LOG --log-prefix "DROP "
+	iptables -A drop_log -j DROP
+}
+
+function reject_log6 {
+	ip6tables -N reject_log || return
+	#ip6tables -m limit -A reject_log --limit 1/second -j LOG --log-prefix "REJECT "
+	ip6tables -A reject_log -j REJECT
+}
+
+function drop_log6 {
+	ip6tables -N drop_log || return
+	#ip6tables -m limit -A drop_log --limit 1/second -j LOG --log-prefix "DROP "
+	ip6tables -A drop_log -j DROP
+}
+
+
+accept_log
+limited_accept_log
+reject_log
+drop_log
+accept_log6
+limited_accept_log6
+reject_log6
+drop_log6
+
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+ip6tables -P INPUT DROP
+ip6tables -P OUTPUT DROP
+ip6tables -P FORWARD DROP
+
+
+iptables -D INPUT -i $interface -j $in || true
+iptables -D OUTPUT -o $interface -j $out || true
+ip6tables -D OUTPUT -o $interface -j $out || true
+ip6tables -D INPUT -i $interface -j $in || true
+
+iptables -D FORWARD -i $interface -j $in
+iptables -D FORWARD -o $interface -j $out
+ip6tables -D FORWARD -o $interface -j $out
+ip6tables -D FORWARD -i $interface -j $in
+
+iptables -N $in || iptables -F $in
+iptables -N $out || iptables -F $out
+ip6tables -N $out || ip6tables -F $out
+ip6tables -N $in || ip6tables -F $in
+
+
+
+iptables -A $out -m state -p udp --state ESTABLISHED -j ACCEPT
+iptables -A $out -m state -p udp --state RELATED -j ACCEPT
+iptables -A $out -p tcp ! --syn -j ACCEPT
+iptables -A $out -p tcp --syn -j limited_accept_log
+iptables -A $out --protocol udp --dport domain -j ACCEPT
+iptables -A $out --protocol udp --dport bootpc -j ACCEPT
+iptables -A $out --protocol udp --sport bootps -j limited_accept_log
+iptables -A $out --protocol udp --sport domain -j limited_accept_log
+iptables -A $out --protocol icmp -j limited_accept_log
+iptables -A $out -j drop_log
+iptables -A $out -j DROP
+
+ip6tables -A $out -p tcp ! --syn -j ACCEPT
+ip6tables -A $out -p tcp --syn -j limited_accept_log
+ip6tables -A $out --protocol icmpv6 -j limited_accept_log
+ip6tables -A $out --protocol udp --dport domain -j ACCEPT
+ip6tables -A $out --protocol udp -j limited_accept_log
+ip6tables -A $out -j drop_log
+ip6tables -A $out -j DROP
+
+#iptables -A $in -m state --state ESTABLISHED -j ACCEPT
+iptables -A $in -p tcp ! --syn -j ACCEPT
+for service in ${SERVICES}
+do
+	iptables -A $in -m state --state NEW -p tcp --destination-port ${service} -j limited_accept_log
+done
+iptables -A $in --protocol udp -j limited_accept_log
+iptables -A $in --protocol icmp -j limited_accept_log
+iptables -A $in -j drop_log
+
+#ip6tables -A $in -m state --state ESTABLISHED -j ACCEPT
+ip6tables -A $in -p tcp ! --syn -j ACCEPT
+ip6tables -A $in --protocol icmpv6 -j limited_accept_log
+ip6tables -A $in --protocol udp -j limited_accept_log
+ip6tables -A $in -j drop_log
+ip6tables -A $in -j DROP
+
+iptables -I INPUT -i $interface -j $in
+ip6tables -I INPUT -i $interface -j $in
+iptables -I OUTPUT -o $interface -j $out
+ip6tables -I OUTPUT -o $interface -j $out
+
+#iptables -I FORWARD -i $interface -j $in
+#ip6tables -I FORWARD -i $interface -j $in
+#iptables -I FORWARD -o $interface -j $out
+#ip6tables -I FORWARD -o $interface -j $out
