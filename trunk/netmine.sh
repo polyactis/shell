@@ -65,8 +65,8 @@ source ~/.bash_profile
 date
 
 case "$type_1" in
-	1)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
-		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op;;
+	1)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op;;
 	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op
 		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/netmine_wrapper.py $default_parameter $parameter --op=$op;;
 	*)	echo "netmine_wrapper.py skipped";;

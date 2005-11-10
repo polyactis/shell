@@ -26,7 +26,7 @@ gene_p_table=gene_p_$lm_suffix
 good_cluster_table=good_cl_$lm_suffix
 cluster_bs_table=cluster_bs_$lm_suffix
 
-n_hosts=$NHOSTS
+n_hosts=$NSLOTS
 machinefile=$TMPDIR/machines
 cp $machinefile ~/
 date

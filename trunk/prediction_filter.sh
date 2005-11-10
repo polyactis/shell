@@ -65,15 +65,14 @@ fi
 
 echo "###### MpiPredictionFilter.py #####"
 case "$type_1" in
-	1)	echo mpirun -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter
-		mpirun -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter;;
+	1)	echo mpirun -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter
+		mpirun -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter;;
 	2)	echo mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter
 		mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiPredictionFilter.py -k $schema -i $input_file -j $new_input_file  -c $parameter;;		
 	*)	echo "MpiPredictionFilter.py skipped";;
 esac
 
 check_exit_status
-
 
 echo "######## cluster_stat2.sh######"
 case "$type_2" in
