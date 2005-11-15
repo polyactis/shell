@@ -26,11 +26,12 @@ for row in machinef:
 this_machine_hostname = os.popen('hostname')
 this_machine_hostname = this_machine_hostname.read()[:-1]
 machine_ls.append(this_machine_hostname)
+no_of_machines = len(machine_ls)
 
 #create outputdir if not present
 if not os.path.isdir(outputdir):
 	os.makedirs(outputdir)
-#start each job and store the pid in child_pid_list WATCH: machine_ls must be >= inputfiles
+#start each job and store the pid in child_pid_list
 match_bin_path = '~/script/transfac/bin/match'
 matrix_path = '~/script/transfac/data/matrix.dat'
 child_pid_list = []
@@ -38,7 +39,8 @@ inputfiles = os.listdir(inputdir)
 for i in range(len(inputfiles)):
 	inputfile = os.path.join(inputdir, inputfiles[i])
 	outputfile = os.path.join(outputdir, '%s.out'%inputfiles[i])
-	pid = os.spawnvp(os.P_NOWAIT,'ssh', ['ssh', machine_ls[i], \
+	#recycle all machines
+	pid = os.spawnvp(os.P_NOWAIT,'ssh', ['ssh', machine_ls[i%no_of_machines], \
 		match_bin_path, matrix_path, inputfile, outputfile, profile_filename])
 	print "%s dispatched"%inputfile
 	child_pid_list.append(pid)
