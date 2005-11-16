@@ -50,17 +50,18 @@ if __name__ == '__main__':
 	#start each job and store the pid in child_pid_list
 	match_bin_path = '~/script/transfac/bin/match'
 	matrix_path = '~/script/transfac/data/matrix.dat'
-	machine2child_pid = {}
+	machine2child_pid_ls = []
 	inputfiles = os.listdir(inputdir)
 	for machine in machine_ls:
-		pid = init_job_on_that_machine(machine, inputdir, inputfiles, outputdir, match_bin_path, matrix_path, profile_filename)
-		machine2child_pid[machine] = pid
+		if len(inputfiles)>0:	#check if there's more inputfile
+			pid = init_job_on_that_machine(machine, inputdir, inputfiles, outputdir, match_bin_path, matrix_path, profile_filename)
+			machine2child_pid_ls.append([machine, pid])
 
 	#wait for each child to end and recycle
-	while machine2child_pid:
-		machine,pid = machine2child_pid.popitem()
+	while machine2child_pid_ls:
+		machine,pid = machine2child_pid_ls.pop(0)
 		status = os.waitpid(pid, 0)
 		sys.stderr.write("%s return status: %s\n"%(pid, status))
 		if len(inputfiles)>0:
 			pid = init_job_on_that_machine(machine, inputdir, inputfiles, outputdir, match_bin_path, matrix_path, profile_filename)
-			machine2child_pid[machine] = pid
+			machine2child_pid_ls.append([machine, pid])
