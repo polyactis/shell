@@ -14,11 +14,11 @@ then
 	echo "1 means enable, 0 means disable"
 	echo
 	echo "For graph_merge,"
-	echo "  1 graph_merge.py, 2 graph_merge_lam.py(20 from hostfile)"
+	echo "  1 graph_merge.py, 2 graph_merge_lam.py(10 from hostfile)"
 	echo "  3 graph_merge_lam.py(nodes assigned by qsub)"
 	echo
 	echo "For complete_cor_vector,"
-	echo "  1 gph_dir to get corCut(20 from hostfile)"
+	echo "  1 gph_dir to get corCut(10 from hostfile)"
 	echo "  2 gph_dir to get corCut(nodes assigned by qsub), 3 t-dist's p-value 0.01"
 	echo
 	exit
@@ -47,10 +47,10 @@ echo ##### I. generate the summary graph ####
 case "$type_1" in
 	1)	echo ~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file
 		~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
-	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
-		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
-	3)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
-		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+	2)	echo mpirun.mpich -np 10 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+	3)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
 	*)	echo "graph_merge skipped";;
 esac
 
@@ -60,12 +60,12 @@ echo ##### II. generate cor_vector and sig_vector files ####
 case "$type_2" in
 	#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 	#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-	1)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
-	mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
-	2)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
-		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
-	3)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir;;
+	1)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+	mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
+	2)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
+	3)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir;;
 	*)	echo "complete_cor_vector.py skipped";;
 esac
 
