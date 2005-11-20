@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if test $# -ne 4
+if test $# -ne 5
 then
 	echo "Usage:"
-	echo "    SchemaPreSetup.sh ORGANISM SCHEMA GENE_FREQ RUNCODE"
+	echo "    SchemaPreSetup.sh ORGANISM SCHEMA GENE_FREQ DEPTH_CUTOFF RUNCODE"
 	echo
 	echo "This is a script to setup go functions and gene table."
 	echo
@@ -13,13 +13,15 @@ then
 	echo "	5.gene_go_functions.py 6.graph_reorganize.py"
 	echo "	7.prepare_gene_id2no.py"
 	echo
+	echo "  3rd digit: 1(node_type=1), 2(node_type=5)"
 	exit
 fi
 
 organism=$1
 schema=$2
 gene_freq=$3
-runcode=$4
+depth_cutoff=$4
+runcode=$5
 #05-21-05 use runcode to control which step is necessary
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
@@ -62,10 +64,13 @@ fi
 
 check_exit_status
 
-if [ $type_3 = "1" ]; then
-	echo ~/script/annot/bin/GO/go_informative_node.py -k $schema -b \>$go_file
-	~/script/annot/bin/GO/go_informative_node.py -k $schema -b >$go_file
-fi
+case "$type_3" in 
+	1)	echo ~/script/annot/bin/GO/go_informative_node.py -k $schema -b \>$go_file
+		~/script/annot/bin/GO/go_informative_node.py -k $schema -b >$go_file;;
+	2)	echo ~/script/annot/bin/GO/go_informative_node.py -k $schema -b -s 5 -m 160 -n5 -l $depth_cutoff \>$go_file
+		~/script/annot/bin/GO/go_informative_node.py -k $schema -b -s 5 -m 160 -n5 -l $depth_cutoff >$go_file;;
+	*)	echo "go_informative_node.py skipped";;
+esac
 
 check_exit_status
 
