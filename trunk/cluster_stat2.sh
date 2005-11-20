@@ -8,11 +8,12 @@ then
 	echo "This is a script linking all stat programs"
 	echo
 	echo "RUNCODE controls which part to turn on"
-	echo " 1.p_gene_lm 2.p_gene_analysis"
+	echo " 1.p_gene_lm/OneParameterCutoffSeeker.py 2.p_gene_analysis"
 	echo " 3.gene_p_map_redundancy 4.filter.sh"
 	echo 
+	echo " 1st digit: 1(p_gene_lm),2(OneParameterCutoffSeeker.py)"
 	echo " 2nd digit: 1(from lm_table)"
-	echo "   2(p_value 0.01) 3(p_value 1)"
+	echo "   2(p_value 0.01) 3(p_value 10000)"
 	echo " 4th digit: 1(qsub), 2(direct run)"
 	exit
 fi
@@ -63,7 +64,9 @@ date
 case "$type_1" in
 	1)	echo ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $lm_bit $acc_cutoff
 		ssh $HOSTNAME ~/script/shell/p_gene_lm.sh $schema $input_file $lm_bit $acc_cutoff;;
-	*)	echo "No p_gene_lm.sh";;
+	2)	echo ssh $HOSTNAME ~/script/annot/bin/OneParameterCutoffSeeker.py -k $schema -t $p_gene_table -l $lm_table -a $acc_cutoff -w $lm_bit -c -j2
+		ssh $HOSTNAME ~/script/annot/bin/OneParameterCutoffSeeker.py -k $schema -t $p_gene_table -l $lm_table -a $acc_cutoff -w $lm_bit -c -j2;;
+	*)	echo "No p_gene_lm.sh/OneParameterCutoffSeeker.py";;
 esac
 
 check_exit_status
@@ -74,7 +77,7 @@ case "$type_2" in
 	2)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
 		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 0.01 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	3)	echo ~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 1 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out
-		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 1 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
+		~/script/annot/bin/p_gene_analysis.py -k $schema -t $splat_result_table -p 10000 -c -j 2  -g $p_gene_table -n $gene_p_table ~/p_gene_analysis/$gene_p_table.out;;
 	*)	echo "No p_gene_analysis.py";;
 
 esac
