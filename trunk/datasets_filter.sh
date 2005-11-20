@@ -62,8 +62,8 @@ date
 
 
 case "$type_4" in
-	1)	echo mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l
-		mpirun.mpich -np $NHOSTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l;;
+	1)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l;;
 	2)	echo mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l
 		mpirun.mpich -np 20 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiGraphModeling.py -i $outputdir_merge -o $gph_dir -p 0 -c 0 -l;;
 	*)	echo "MpiGraphModeling.py skipped";;
