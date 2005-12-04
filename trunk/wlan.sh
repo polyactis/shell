@@ -42,6 +42,7 @@ fi
 
 
 if [ $a = "4" ]; then
+	ifconfig eth0 down
 	route del default gw src
 	iwconfig $interface essid "portland"
 	iwconfig $interface key C758C65F16616BA8D2489C67BE
@@ -63,8 +64,10 @@ if [ $a = "6" ]; then
 fi
 
 if [ $a = "7" ]; then
+	ifconfig eth0 down
 	route del default gw src
 	iwconfig $interface essid "default"
 	iwconfig $interface key open
+	iwconfig $interface key off
 	dhclient $interface
 fi
