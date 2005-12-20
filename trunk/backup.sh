@@ -7,7 +7,7 @@ echo -n $1
 echo -n ' ...'
 tar -cvvf /usr/local/src/zip/$2.tar $1
 gzip /usr/local/src/zip/$2.tar
-scp /usr/local/src/zip/$2.tar.gz yuhuang@app1.cmb.usc.edu:./backup/
+scp /usr/local/src/zip/$2.tar.gz yuhuang@app2.cmb.usc.edu:./backup/
 rm /usr/local/src/zip/$2.tar.gz
 echo 'done'
 date
