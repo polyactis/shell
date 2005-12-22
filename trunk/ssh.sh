@@ -12,14 +12,14 @@ echo "9. hpc.usc.edu"
 echo "0. hpc-cmb.usc.edu"
 read a
 if [ $a = "1" ]; then
-	ssh hto-pc44.usc.edu -l yh
+	ssh hto-pc44.usc.edu -l yh -X
 fi
 if [ $a = "2" ]; then
 	ssh hto-g.usc.edu -l yuhuang
 fi
 
 if [ $a = "3" ]; then
-	ssh zhoudb.usc.edu -l yh
+	ssh zhoudb.usc.edu -l yh -X
 fi
 
 
@@ -32,21 +32,21 @@ if [ $a = "5" ]; then
 fi
 
 if [ $a = "6" ]; then
-	ssh zhoulab.usc.edu -l yh
+	ssh zhoulab.usc.edu -l yh -X
 fi
 
 if [ $a = "7" ]; then
-	ssh yh@gan.usc.edu
+	ssh yh@gan.usc.edu -X
 fi
 
 if [ $a = "8" ]; then
-	ssh yh@10.113.0.1
+	ssh yh@10.113.0.1 -X 
 fi
 
 if [ $a = "9" ]; then
-	ssh yuhuang@hpc.usc.edu
+	ssh yuhuang@hpc.usc.edu -X 
 fi
 
 if [ $a = "0" ]; then
-	ssh yuhuang@hpc-cmb.usc.edu
+	ssh yuhuang@hpc-cmb.usc.edu -X
 fi
