@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Which host:"
 echo "1. hto-pc44"
-echo "2. hto-g"
+echo "2. hpc-opteron"
 echo "3. zhoudb"
 echo "4. app1"
 echo "5. app2"
@@ -15,7 +15,7 @@ if [ $a = "1" ]; then
 	ssh hto-pc44.usc.edu -l yh -X
 fi
 if [ $a = "2" ]; then
-	ssh hto-g.usc.edu -l yuhuang
+	ssh hpc-opteron.usc.edu -l yuhuang -X
 fi
 
 if [ $a = "3" ]; then
