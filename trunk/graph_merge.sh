@@ -13,12 +13,12 @@ then
 	echo "	3.clustering_test, 4.haiyan_cor_vector2db."
 	echo "1 means enable, 0 means disable"
 	echo
-	echo "For graph_merge,"
+	echo "1(graph_merge):"
 	echo "  1 graph_merge.py, 2 graph_merge_lam.py(10 from hostfile)"
 	echo "  3 graph_merge_lam.py(nodes assigned by qsub)"
 	echo "  4 graph_merge_lam.py(hpc-cmb parallel)"
 	echo
-	echo "For complete_cor_vector,"
+	echo "2(complete_cor_vector.py):"
 	echo "  1 gph_dir to get corCut(10 from hostfile)"
 	echo "  2 gph_dir to get corCut(nodes assigned by qsub), 3 t-dist's p-value 0.01"
 	echo "  4 gph_dir to get corCut(hpc-cmb parallel)"
