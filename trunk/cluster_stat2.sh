@@ -93,10 +93,10 @@ fi
 check_exit_status
 
 case "$type_4" in
-	1)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 11
-		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 11;;
-	2)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 22
-		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 22;;
+	1)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 10
+		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 10;;
+	2)	echo ~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 20
+		~/script/shell/filter.sh $schema $input_file $lm_bit $acc_cutoff 20;;
 	*)	echo "filter.sh skipped";;	
 esac
 
