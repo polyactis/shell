@@ -11,7 +11,7 @@ then
 	echo "	1.gene_table.py 2.find_unknown_genes.py"
 	echo "	3.go_informative_node.py 4.go_bioprocess.py"
 	echo "	5.gene_go_functions.py 6.graph_reorganize.py"
-	echo "	7.prepare_gene_id2no.py"
+	echo "	7.prepare_gene_id2no.py 8.fill_dataset_no2id.py"
 	echo
 	echo "  3rd digit: 1(node_type=1), 2(node_type=5)"
 	exit
@@ -30,6 +30,7 @@ type_4=`echo $runcode|awk '{print substr($0,4,1)}'`
 type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
 type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 type_7=`echo $runcode|awk '{print substr($0,7,1)}'`
+type_8=`echo $runcode|awk '{print substr($0,8,1)}'`
 
 
 unknown_file=/tmp/$organism.unknown
@@ -101,6 +102,15 @@ if [ $type_7 = "1" ]; then
 	gene_id2no=$schema\_gene_id2no
 	echo ~/script/annot/bin/prepare_gene_id2no.py -k $schema ~/bin/hhu_clustering/$gene_id2no
 	~/script/annot/bin/prepare_gene_id2no.py -k $schema ~/bin/hhu_clustering/$gene_id2no
+fi
+
+check_exit_status
+
+if [ $type_8 = "1" ]; then
+	#12-24-05 assume the mapping_file
+	mapping_file=~/mapping/$schema\_datasets_mapping
+	echo ~/script/annot/bin/fill_dataset_no2id.py -k $schema -m $mapping_file -c
+	~/script/annot/bin/fill_dataset_no2id.py -k $schema -m $mapping_file -c
 fi
 
 check_exit_status
