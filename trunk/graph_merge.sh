@@ -10,7 +10,7 @@ then
 	echo "RUNCODE is something like 1010, or 2110"
 	echo "	The four digits correspond to "
 	echo "	1.graph_merge, 2.complete_cor_vector,"
-	echo "	3.clustering_test, 4.haiyan_cor_vector2db."
+	echo "	3.clustering_test(IGNORE), 4.haiyan_cor_vector2db(IGNORE)."
 	echo "1 means enable, 0 means disable"
 	echo
 	echo "1(graph_merge):"
@@ -22,6 +22,7 @@ then
 	echo "  1 gph_dir to get corCut(10 from hostfile)"
 	echo "  2 gph_dir to get corCut(nodes assigned by qsub), 3 t-dist's p-value 0.01"
 	echo "  4 gph_dir to get corCut(hpc-cmb parallel)"
+	echo "  12-31-05 output uses gene_no"
 	echo
 	exit
 fi
@@ -67,18 +68,18 @@ echo ##### II. generate cor_vector and sig_vector files ####
 case "$type_2" in
 	#echo mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
 	#mpirun.lam N ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
-	1)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+	1)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir
 		#parallel but 10 nodes from ~/hostfile
-		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
-	2)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir;;
+	2)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir
 		#parallel but nodes assigned by qsub, app2's cluster
-		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
-	3)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir;;
+	3)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig -b 2 $dataset_dir
 		#parallel but 10 nodes from ~/hostfile, t-dist's p-value 0.01
-		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig $dataset_dir;;
-	4)	echo mpiexec ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -s $merge_graph_sig -b 2 $dataset_dir;;
+	4)	echo mpiexec ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir
 		#parallel directive for hpc-cmb
-		mpiexec ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig $dataset_dir;;
+		mpiexec ~/script/annot/bin/graph/complete_cor_vector.py -i $merge_graph_file -o $merge_graph_cor -p 0 -c 0 -g $raw_graph_dir -s $merge_graph_sig -b 2 $dataset_dir;;
 	*)	echo "complete_cor_vector.py skipped";;
 esac
 
