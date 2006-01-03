@@ -21,7 +21,7 @@ then
 	echo "2(fim_closed):"
 	echo "  1, app2, ssh node29"
 	echo "  2, direct run"
-	echo "  3, closet+/PostFim.py"
+	echo "  3, closet+"
 	echo "3(MpiFromDatasetSignatureToPattern.py):"
 	echo "  1, app2, qsub assigned"
 	echo "  2, 10 nodes in ~/hostfile"
@@ -102,12 +102,12 @@ case "$type_2" in
 	2)	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
 		#just run, (hpc-cmb)
 		~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support;;
-	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $closet_output
+	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $support
 		#closet+ just run, (hpc-cmb)
-		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $closet_output
-		echo ~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output
-		#needs PostFim.py to filter itemsets
-		~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output;;
+		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $support;;
+		#echo ~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output
+		#needs PostFim.py, to convert the format to fim_closed for followup program
+		#~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output;;
 	*)	echo "fim_closed/closet+ skipped";;
 esac
 
