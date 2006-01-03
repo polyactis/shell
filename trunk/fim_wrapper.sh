@@ -15,9 +15,13 @@ then
 	echo
 	echo "Each digit in RUNCODE:"
 	echo
+	echo "1(PreFimInput.py):"
+	echo "  1, for fim_closed"
+	echo "  2, for closet+"
 	echo "2(fim_closed):"
 	echo "  1, app2, ssh node29"
 	echo "  2, direct run"
+	echo "  3, closet+/PostFim.py"
 	echo "3(MpiFromDatasetSignatureToPattern.py):"
 	echo "  1, app2, qsub assigned"
 	echo "  2, 10 nodes in ~/hostfile"
@@ -59,6 +63,8 @@ done
 
 edge_sig_vector_fname=~/bin/hhu_clustering/data/input/$schema\_$sg_min_support.sig_vector
 fim_input=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_i
+closet_input_spec=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_i.spec
+closet_output=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_closet_o
 fim_output=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_o
 op=$schema\m$support\x$max_support$outputsfx
 final_output=~/bin/hhu_clustering/data/output/netmine/$op
@@ -75,11 +81,15 @@ check_exit_status() {
 source ~/.bash_profile
 date
 
-if [ $type_1 = "1" ]; then
-	echo ~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support $fim_input
-	~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support $fim_input
-
-fi
+case "$type_1" in
+	1)	echo ~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support $fim_input
+		#for fim_closed
+		~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support $fim_input;;
+	2)	echo ~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support -y2 $fim_input
+		#for closet+
+		~/script/annot/bin/PreFimInput.py  -s $edge_sig_vector_fname -m $support -x $max_support -y2 $fim_input;;
+	*)	echo "PreFimInput.py skipped";;
+esac
 
 check_exit_status
 
@@ -92,7 +102,13 @@ case "$type_2" in
 	2)	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
 		#just run, (hpc-cmb)
 		~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support;;
-	*)	echo "fim_closed skipped";;
+	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $closet_output
+		#closet+ just run, (hpc-cmb)
+		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $closet_output
+		echo ~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output
+		#needs PostFim.py to filter itemsets
+		~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output;;
+	*)	echo "fim_closed/closet+ skipped";;
 esac
 
 check_exit_status
