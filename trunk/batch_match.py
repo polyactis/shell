@@ -18,7 +18,6 @@ def init_job_on_that_machine(machine, inputdir, inputfiles, outputdir, match_bin
 	inputfile = os.path.join(inputdir, inputfilename)
 	outputfile = os.path.join(outputdir, '%s.out'%inputfilename)
 	job_ls = ['ssh', machine, match_bin_path, matrix_path, inputfile, outputfile, profile_filename]
-	print job_ls
 	pid = os.spawnvp(os.P_NOWAIT,'ssh', job_ls)
 	sys.stderr.write("%s dispatched\n"%inputfile)
 	return pid
