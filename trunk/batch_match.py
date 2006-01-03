@@ -11,14 +11,15 @@ Description:
 	previous job to finish(a stupid queue, not the 1st finished job).
 """
 
-import os, sys, csv
+import os, sys 
 
 def init_job_on_that_machine(machine, inputdir, inputfiles, outputdir, match_bin_path, matrix_path, profile_filename):
 	inputfilename = inputfiles.pop()
 	inputfile = os.path.join(inputdir, inputfilename)
 	outputfile = os.path.join(outputdir, '%s.out'%inputfilename)
-	pid = os.spawnvp(os.P_NOWAIT,'ssh', ['ssh', machine, \
-		match_bin_path, matrix_path, inputfile, outputfile, profile_filename])
+	job_ls = ['ssh', machine, match_bin_path, matrix_path, inputfile, outputfile, profile_filename]
+	print job_ls
+	pid = os.spawnvp(os.P_NOWAIT,'ssh', job_ls)
 	sys.stderr.write("%s dispatched\n"%inputfile)
 	return pid
 
@@ -30,11 +31,12 @@ if __name__ == '__main__':
 	machinefile, inputdir, outputdir, profile_filename = sys.argv[1:]
 	
 	#read other machines from machinefile
-	machinef = csv.reader(open(machinefile), delimiter=' ')
+	machinef = open(machinefile)
 	machine_ls = []
-	for row in machinef:
-		machine_ls.append(row[0])
-		sys.stderr.write("%s added to machine_ls.\n"%row[0])
+	for line in machinef:
+		machine_name = line[:-1]
+		machine_ls.append(machine_name)
+		sys.stderr.write("%s added to machine_ls.\n"%machine_name)
 	"""
 	#11-15-05 not necessary, this_machine_hostname is the first one in machinefile
 	#get the hostname for this machine and append it to the last
