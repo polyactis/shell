@@ -15,7 +15,12 @@ Description:
 	report the number of columns of the first line of all files.
 	FUTURE: consider a through check of the whole file.
 """
-
+import sys, os, math
+bit_number = math.log(sys.maxint)/math.log(2)
+if bit_number>40:       #64bit
+	sys.path.insert(0, os.path.expanduser('~/lib64/python'))
+else:   #32bit
+	sys.path.insert(0, os.path.expanduser('~/lib/python'))
 import sys, os, re, getopt, csv
 
 class count_columns:
