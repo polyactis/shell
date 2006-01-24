@@ -17,14 +17,16 @@ then
 	echo " 1. MpiBFSCluster.py 2.codense2db 3.cluster_stat.py"
 	echo " 4.gene_stat 5.rpart_prediction.py 6.cluster_stat2.sh"
 	echo
-	echo " 1st digit: 1(qsub) 2(direct run)"
-	echo " 2nd digit is ALGORITHM type."
+	echo " 1(MpiBFSCluster.py): "
+	echo "   1(qsub, app2), 2(10 nodes ~/hostfile), 3(parallel, hpc-cmb)"
+	echo " 2(codense2db.py, ALGORITHM type):"
 	echo "   1(copath), 2(codense), 3(fim), 4(fimbfs)"
 	echo "   5(biclustering), 0(skip)"
 	echo " 3rd digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
 	echo "   3(MpiClusterGeneStat.py, qsub), 4(MpiStatCluster.py, qsub)"
-	echo "	 5(MpiStatCluster.py, direct run)"
-	echo "   if MpiClusterGeneStat.py is on, gene_stat.py will be off"
+	echo "	 5(MpiStatCluster.py, 10 nodes ~/hostfile)"
+	echo "   6(MpiStatCluster.py, parallel, hpc-cmb)"
+	echo "   if not ==1 , gene_stat.py will be off"
 	echo " 6(cluster_stat2.sh): 1(lm, qsub) 2(lm, direct run)"
 	echo "   3(OneParam...,qsub) 4(OneParam... no filter.sh, direct run)"
 	exit
@@ -100,6 +102,12 @@ case "$type_1" in
 		mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
 		input_file=$new_input_file	#change input_filie
 		derive_tables;;
+	3)	new_input_file=$input_file\bfs
+		echo mpiexec ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
+		#parallel, hpc-cmb
+		mpiexec ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
+		input_file=$new_input_file	#change input_filie
+		derive_tables;;
 	*)	echo "MpiBFSCluster.py skipped";;
 esac
 
@@ -149,14 +157,19 @@ case "$type_3" in
 	3)	echo mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
 		#parallel, nodes assigned by qsub, app2
 		mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
-	4)	echo ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file -n -c -f ~/hs_fim_40.go_no2edge_counter_list $parameter
+	4)	echo ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
 		#parallel, nodes assigned by qsub, app2
-		ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file -n -c -f ~/hs_fim_40.go_no2edge_counter_list $parameter
+		ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
 		input_file=$new_input_file	#10-23-05 change input_filie
 		derive_tables;;
-	5)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file -n -c -f ~/hs_fim_40.go_no2edge_counter_list $parameter
+	5)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
 		#parallel, 10 nodes from ~/hostfile
-		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file -n -c -f ~/hs_fim_40.go_no2edge_counter_list $parameter
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
+		input_file=$new_input_file	#10-23-05 change input_filie
+		derive_tables;;
+	6)	echo mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
+		#parallel, hpc-cmb
+		mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
 		input_file=$new_input_file	#10-23-05 change input_filie
 		derive_tables;;
 	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
