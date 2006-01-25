@@ -10,8 +10,8 @@ then
 	echo "RUNCODE controls which part to turn on."
 	echo "	The three digits correspond to "
 	echo "	1.PreFimInput.py 2.fim_closed "
-	echo "	3.MpiFromDatasetSignatureToPattern.py 4.cluster_stat.sh"
-	echo "  (dense) 5.MpiCrackSplat.py 6.cluster_stat.sh"
+	echo "	3.MpiFromDatasetSignatureToPattern.py 4.MpiBFSCluster.py"
+	echo "  5.cluster_stat.sh 6.MpiCrackSplat.py(dense) 7.cluster_stat.sh(dense)"
 	echo
 	echo "Each digit in RUNCODE:"
 	echo
@@ -29,10 +29,12 @@ then
 	echo "  4, 10 nodes + no_cc"
 	echo "  5, hpc-cmb, nodes assigned by qsub"
 	echo
-	echo "4 & 6(cluster_stat.sh): forget it."
+	echo "4(MpiBFSCluster.py):"
+	echo "   1(qsub, app2), 2(10 nodes ~/hostfile), 3(parallel, hpc-cmb)"
+	echo "5 & 7(cluster_stat.sh): forget it."
 	echo "  1 use qsub(nodes by $NSLOTS), 2 just run"
 	echo 
-	echo "5(MpiCrackSplat.py):"
+	echo "6(MpiCrackSplat.py):"
 	echo " 1.(qsub) 2.(direct run) 3.(hpc-cmb, qsub)"
 	echo
 	echo "OUTPUTSFX is attached to the default outputfilename"
@@ -70,6 +72,7 @@ op=$schema\m$support\x$max_support$outputsfx
 final_output=~/bin/hhu_clustering/data/output/netmine/$op
 
 check_exit_status() {
+	date
 	return_code=$?
 	if [ $return_code != "0" ]; then
 		echo "Return code non-zero:"$return_code
@@ -129,9 +132,9 @@ case "$type_3" in
 	4)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -o $final_output -n
 		#10 nodes from ~/hostfile, no_cc(no connected components)
 		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -o $final_output -n;;
-	5)	echo mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output
+	5)	echo mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output -q 250000
 		#hpc-cmb, nodes assigned by qsub
-		mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output;;
+		mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output -q 250000;;
 	*)	echo "MpiFromDatasetSignatureToPattern.py skipped";;
 esac
 
@@ -139,9 +142,30 @@ check_exit_status
 
 date
 
+case "$type_4" in
+	1)	echo mpirun -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		#parallel, nodes assigned by qsub
+		mpirun -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		op=$op\bfs
+		final_output=$final_output\bfs;;
+	2)	echo mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		#parallel, 10 nodes from ~/hostfile
+		mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		op=$op\bfs
+		final_output=$final_output\bfs;;
+	3)	echo mpiexec ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		#parallel, hpc-cmb
+		mpiexec ~/script/annot/bin/MpiBFSCluster.py -i $final_output -o $final_output\bfs -g $edge_sig_vector_fname -m $support -x $max_support
+		op=$op\bfs
+		final_output=$final_output\bfs;;
+	*)	echo "MpiBFSCluster.py skipped";;
+esac
+
+check_exit_status
+date
 
 echo "########IV. cluster_stat on connected components######"
-case "$type_4" in
+case "$type_5" in
 	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NSLOTS ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff 14403 zdf
 		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NSLOTS ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff 14403 zdf;;
 	2)	echo ~/script/shell/cluster_stat.sh $schema $op $lm_bit $acc_cutoff  24504 zdf
@@ -156,7 +180,7 @@ date
 
 dfinal_output=$final_output\d50
 echo "########V. dense clustering ######"
-case "$type_5" in
+case "$type_6" in
 	1)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output
 		#app2, nodes assigned by qsub
 		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/MpiCrackSplat.py -k $schema -i $final_output -m $support -x $max_support -c 0.5 -o $dfinal_output;;
@@ -175,7 +199,7 @@ date
 
 dop=$op\d50
 echo "########VI. cluster_stat on dense clusters######"
-case "$type_6" in
+case "$type_7" in
 	1)	echo ssh app2 qsub -@ ~/.qsub.options -pe mpich $NSLOTS ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 14403 zdf
 		ssh app2 qsub -@ ~/.qsub.options -pe mpich $NSLOTS ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 14403 zdf;;
 	2)	echo ~/script/shell/cluster_stat.sh $schema $dop $lm_bit $acc_cutoff 24504 zdf

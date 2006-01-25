@@ -14,20 +14,18 @@ then
 	echo "  MpiStatCluster.py and rpart_prediction.py can't be run simultaneously."
 	echo
 	echo "RUNCODE controls which part to turn on"
-	echo " 1. MpiBFSCluster.py 2.codense2db 3.cluster_stat.py"
-	echo " 4.gene_stat 5.rpart_prediction.py 6.cluster_stat2.sh"
+	echo " 1.codense2db 2.cluster_stat.py"
+	echo " 3.gene_stat 4.rpart_prediction.py 5.cluster_stat2.sh"
 	echo
-	echo " 1(MpiBFSCluster.py): "
-	echo "   1(qsub, app2), 2(10 nodes ~/hostfile), 3(parallel, hpc-cmb)"
-	echo " 2(codense2db.py, ALGORITHM type):"
+	echo " 1(codense2db.py, ALGORITHM type):"
 	echo "   1(copath), 2(codense), 3(fim), 4(fimbfs)"
 	echo "   5(biclustering), 0(skip)"
-	echo " 3rd digit: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
+	echo " 2: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
 	echo "   3(MpiClusterGeneStat.py, qsub), 4(MpiStatCluster.py, qsub)"
 	echo "	 5(MpiStatCluster.py, 10 nodes ~/hostfile)"
 	echo "   6(MpiStatCluster.py, parallel, hpc-cmb)"
 	echo "   if not ==1 , gene_stat.py will be off"
-	echo " 6(cluster_stat2.sh): 1(lm, qsub) 2(lm, direct run)"
+	echo " 5(cluster_stat2.sh): 1(lm, qsub) 2(lm, direct run)"
 	echo "   3(OneParam...,qsub) 4(OneParam... no filter.sh, direct run)"
 	exit
 fi
@@ -89,31 +87,8 @@ derive_tables
 setup_pe
 cd ~/bin/hhu_clustering/data/output/netmine/
 
+
 case "$type_1" in
-	1)	new_input_file=$input_file\bfs
-		echo mpirun -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		#parallel, nodes assigned by qsub
-		mpirun -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		input_file=$new_input_file	#change input_filie
-		derive_tables;;
-	2)	new_input_file=$input_file\bfs
-		echo mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		#parallel, 10 nodes from ~/hostfile
-		mpirun -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		input_file=$new_input_file	#change input_filie
-		derive_tables;;
-	3)	new_input_file=$input_file\bfs
-		echo mpiexec ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		#parallel, hpc-cmb
-		mpiexec ~/script/annot/bin/MpiBFSCluster.py -i ~/bin/hhu_clustering/data/output/netmine/$input_file -o ~/bin/hhu_clustering/data/output/netmine/$new_input_file
-		input_file=$new_input_file	#change input_filie
-		derive_tables;;
-	*)	echo "MpiBFSCluster.py skipped";;
-esac
-
-check_exit_status
-
-case "$type_2" in
 	1)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file
 		#copath results
 		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file;;
@@ -147,7 +122,7 @@ else
 fi
 #05-19-05 cluster_stat goes to a file
 
-case "$type_3" in
+case "$type_2" in
 	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0
 		#no parallel, cluster_stat.py
 		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0;;
@@ -178,8 +153,8 @@ esac
 check_exit_status
 
 
-if [ $type_3 = "1" ]; then
-	if [ $type_4 = "1" ]; then
+if [ $type_2 = "1" ]; then
+	if [ $type_3 = "1" ]; then
 		#05-19-05 cluster_stat goes to a file
 		echo ~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
 		~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
@@ -194,7 +169,7 @@ app2=172.16.0.5
 rpart_parameter=$parameter
 new_input_file=$input_file`~/script/annot/bin/arguments2string.py $rpart_parameter`
 echo "######## rpart_prediction.py ######"
-case "$type_5" in
+case "$type_4" in
 	1)	echo ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c $rpart_parameter
 		ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c $rpart_parameter
 		input_file=$new_input_file	#change input_filie
@@ -204,7 +179,7 @@ esac
 
 check_exit_status
 echo "######## cluster_stat2.sh######"
-case "$type_6" in
+case "$type_5" in
 	1)	echo ssh $app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1111
 		ssh $app2 qsub -@ ~/.qsub.options -l mem=4G ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1111;;
 	2)	echo ~/script/shell/cluster_stat2.sh $schema $input_file $lm_bit $acc_cutoff 1112
