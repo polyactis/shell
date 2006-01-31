@@ -17,6 +17,7 @@ then
 	echo "  1 graph_merge.py, 2 graph_merge_lam.py(10 from hostfile)"
 	echo "  3 graph_merge_lam.py(nodes assigned by qsub)"
 	echo "  4 graph_merge_lam.py(hpc-cmb parallel)"
+	echo "  for graph_merge_lam.py, threshold=5000000, 924M"
 	echo
 	echo "2(complete_cor_vector.py):"
 	echo "  1 gph_dir to get corCut(10 from hostfile)"
@@ -50,15 +51,15 @@ echo ##### I. generate the summary graph ####
 case "$type_1" in
 	1)	echo ~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file
 		~/script/annot/bin/graph_merge.py -s $support $graph_dir $merge_graph_file;;
-	2)	echo mpirun.mpich -np 10 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+	2)	echo mpirun.mpich -np 10 -machinefile ~/hostfile ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file
 		#parallel but 10 nodes from ~/hostfile
-		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
-	3)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file;;
+	3)	echo mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file
 		#parallel but nodes assigned by qsub, app2's cluster
-		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
-	4)	echo mpiexec ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file
+		mpirun.mpich -np $NSLOTS -machinefile $TMPDIR/machines /usr/bin/mpipython ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file;;
+	4)	echo mpiexec ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file
 		#parallel directive for hpc-cmb
-		mpiexec ~/script/annot/bin/graph_merge_lam.py -s $support $graph_dir $merge_graph_file;;
+		mpiexec ~/script/annot/bin/graph_merge_lam.py -s $support -t 5000000 $graph_dir $merge_graph_file;;
 	*)	echo "graph_merge skipped";;
 esac
 
