@@ -14,17 +14,17 @@ then
 	echo "  MpiStatCluster.py and rpart_prediction.py can't be run simultaneously."
 	echo
 	echo "RUNCODE controls which part to turn on"
-	echo " 1.codense2db 2.cluster_stat.py"
+	echo " 1.cluster_stat.py 2.codense2db "
 	echo " 3.gene_stat 4.rpart_prediction.py 5.cluster_stat2.sh"
 	echo
-	echo " 1(codense2db.py, ALGORITHM type):"
-	echo "   1(copath), 2(codense), 3(fim), 4(fimbfs)"
-	echo "   5(biclustering), 0(skip)"
-	echo " 2: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
+	echo " 1: 1(cluster_stat.py), 2(MpiClusterGeneStat.py)"
 	echo "   3(MpiClusterGeneStat.py, qsub), 4(MpiStatCluster.py, qsub)"
 	echo "	 5(MpiStatCluster.py, 10 nodes ~/hostfile)"
 	echo "   6(MpiStatCluster.py, parallel, hpc-cmb)"
 	echo "   if not ==1 , gene_stat.py will be off"
+	echo " 2(codense2db.py, ALGORITHM type):"
+	echo "   1(copath), 2(codense), 3(fim), 4(fimbfs)"
+	echo "   5(biclustering), 6(SelectClusterPrediction.py), 0(skip)"
 	echo " 5(cluster_stat2.sh): 1(lm, qsub) 2(lm, direct run)"
 	echo "   3(OneParam...,qsub) 4(OneParam... no filter.sh, direct run)"
 	exit
@@ -88,7 +88,45 @@ setup_pe
 cd ~/bin/hhu_clustering/data/output/netmine/
 
 
+
+
+newsfx_1=`echo $newsfx|awk '{print substr($0,1,1)}'`	#{} is a must.
+if [ $newsfx = 'n' ]; then	#'n' is for nothing
+	newsfx=''
+fi
+if [ $newsfx_1 = 'z' ]; then
+	newsfx_left=`echo $newsfx|awk '{print substr($0,2,100)}'` #100 is big
+	new_input_file=$input_file$newsfx_left
+else
+	new_input_file=$input_file$newsfx`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
+fi
+#05-19-05 cluster_stat goes to a file
+
 case "$type_1" in
+	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0
+		#no parallel, cluster_stat.py
+		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0;;
+	2)	echo mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
+		#parallel, 30 nodes from ~/hostfile
+		mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
+	3)	echo mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
+		#parallel, nodes assigned by qsub, app2
+		mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
+	4)	echo ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
+		#parallel, nodes assigned by qsub, app2
+		ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter;;
+	5)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
+		#parallel, 10 nodes from ~/hostfile
+		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter;;
+	6)	echo mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
+		#parallel, hpc-cmb
+		mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter;;
+	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
+esac
+
+check_exit_status
+
+case "$type_2" in
 	1)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file
 		#copath results
 		~/script/annot/bin/codense/codense2db.py -k $schema -p ~/bin/hhu_clustering/$gene_id2no -c -y1 -o $pattern_table -t $splat_result_table -m $mcl_result_table $input_file;;
@@ -104,56 +142,17 @@ case "$type_1" in
 	5)	echo ~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table $input_file
 		#biclustering results
 		~/script/annot/bin/codense/codense2db.py -k $schema -c -t $splat_result_table -m $mcl_result_table -o $pattern_table $input_file;;
+	6)	echo ~/script/annot/bin/SelectClusterPrediction.py -k $schema -i $input_file -s $new_input_file -j $new_input_file -m ~/mapping/$schema\.gim -c
+		#SelectClusterPrediction.py
+		~/script/annot/bin/SelectClusterPrediction.py -k $schema -i $input_file -s $new_input_file -j $new_input_file -m ~/mapping/$schema\.gim -c
+		input_file=$new_input_file	#10-23-05 change input_filie
+		derive_tables;;
 	*)	echo "codense2db skipped";;
 esac
 
 check_exit_status
 
-
-newsfx_1=`echo $newsfx|awk '{print substr($0,1,1)}'`	#{} is a must.
-if [ $newsfx = 'n' ]; then	#'n' is for nothing
-	newsfx=''
-fi
-if [ $newsfx_1 = 'z' ]; then
-	newsfx_left=`echo $newsfx|awk '{print substr($0,2,100)}'` #100 is big
-	new_input_file=$input_file$newsfx_left
-else
-	new_input_file=$input_file$newsfx`~/script/annot/bin/arguments2string.py $parameter`	#attach the additional arguments to the input_file name
-fi
-#05-19-05 cluster_stat goes to a file
-
-case "$type_2" in
-	1)	echo ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0
-		#no parallel, cluster_stat.py
-		ssh $HOSTNAME ~/script/annot/bin/cluster_stat.py -k $schema -s $mcl_result_table  -p $cluster_stat_table -w -u 0;;
-	2)	echo mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
-		#parallel, 30 nodes from ~/hostfile
-		mpirun.mpich -np 30 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
-	3)	echo mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c
-		#parallel, nodes assigned by qsub, app2
-		mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiClusterGeneStat.py -k $schema -s $mcl_result_table -p $cluster_stat_table -g $p_gene_table -c;;
-	4)	echo ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		#parallel, nodes assigned by qsub, app2
-		ssh $HOSTNAME mpirun.mpich -np $n_hosts -machinefile $new_machinefile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		input_file=$new_input_file	#10-23-05 change input_filie
-		derive_tables;;
-	5)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		#parallel, 10 nodes from ~/hostfile
-		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		input_file=$new_input_file	#10-23-05 change input_filie
-		derive_tables;;
-	6)	echo mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		#parallel, hpc-cmb
-		mpiexec ~/script/annot/bin/MpiStatCluster.py -k $schema -i $input_file -j $new_input_file $parameter
-		input_file=$new_input_file	#10-23-05 change input_filie
-		derive_tables;;
-	*)	echo "cluster_stat.py or MpiClusterGeneStat.py skipped";;
-esac
-
-check_exit_status
-
-
-if [ $type_2 = "1" ]; then
+if [ $type_1 = "1" ]; then
 	if [ $type_3 = "1" ]; then
 		#05-19-05 cluster_stat goes to a file
 		echo ~/script/annot/bin/gene_stat.py -k $schema -f $cluster_stat_table -m $mcl_result_table -g $p_gene_table -e 5 -l -w -c
