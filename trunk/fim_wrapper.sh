@@ -1,11 +1,14 @@
 #!/bin/sh
 
-if test $# -lt 6
+if test $# -lt 7
 then
 	echo "Usage:"
-	echo "    fim_wrapper.sh SCHEMA SG_MIN_SUPPORT MIN_SUPPORT MAX_SUPPORT LM_BIT ACC_CUTOFF RUNCODE OUTPUTSFX"
+	echo "    fim_wrapper.sh SCHEMA SG_MIN_SUPPORT MIN_SUPPORT MAX_SUPPORT FIM_SUPPORT LM_BIT ACC_CUTOFF RUNCODE OUTPUTSFX"
 	echo 
 	echo "SG_MIN_SUPPORT is the minimum support for that summary graph."
+	echo "MIN_SUPPORT MAX_SUPPORT is to pick edges from summary graph."
+	echo "OUTPUTSFX is attached to the default outputfilename"
+	echo "FIM_SUPPORT is the minimum support of the pattern"
 	echo
 	echo "RUNCODE controls which part to turn on."
 	echo "	The three digits correspond to "
@@ -37,7 +40,6 @@ then
 	echo "6(MpiCrackSplat.py):"
 	echo " 1.(qsub) 2.(direct run) 3.(hpc-cmb, qsub)"
 	echo
-	echo "OUTPUTSFX is attached to the default outputfilename"
 	exit
 fi
 
@@ -46,9 +48,10 @@ sg_min_support=$2
 shift	#insert sg_min_support
 support=$2
 max_support=$3
-lm_bit=$4
-acc_cutoff=$5
-runcode=$6
+fim_support=$4
+lm_bit=$5
+acc_cutoff=$6
+runcode=$7
 type_1=`echo $runcode|awk '{print substr($0,1,1)}'`	#{} is a must.
 type_2=`echo $runcode|awk '{print substr($0,2,1)}'`
 type_3=`echo $runcode|awk '{print substr($0,3,1)}'`
@@ -57,18 +60,19 @@ type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
 type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 outputsfx=''
-while test -n "$7"
+while test -n "$8"
 do
-outputsfx=$outputsfx$7
+outputsfx=$outputsfx$8
 shift
 done
 
 edge_sig_vector_fname=~/bin/hhu_clustering/data/input/$schema\_$sg_min_support.sig_vector
-fim_input=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_i
-closet_input_spec=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_i.spec
-closet_output=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_closet_o
-fim_output=~/tmp/fim_wrapper/$schema\m$support\x$max_support\_o
-op=$schema\m$support\x$max_support$outputsfx
+fim_prefix=$schema\m$support\x$max_support\f$fim_support
+fim_input=~/tmp/fim_wrapper/$fim_prefix\_i
+closet_input_spec=$fim_input.spec
+closet_output=~/tmp/fim_wrapper/$fim_prefix\_closet_o
+fim_output=~/tmp/fim_wrapper/$fim_prefix\_o
+op=$fim_prefix$outputsfx
 final_output=~/bin/hhu_clustering/data/output/netmine/$op
 
 check_exit_status() {
@@ -99,15 +103,15 @@ check_exit_status
 date
 
 case "$type_2" in
-	1)	echo ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
+	1)	echo ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support
 		#for app2, use big node
-		ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support;;
-	2)	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support
+		ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support;;
+	2)	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support
 		#just run, (hpc-cmb)
-		~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $support;;
-	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $support
+		~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support;;
+	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $fim_support
 		#closet+ just run, (hpc-cmb)
-		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $support;;
+		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $fim_support;;
 		#echo ~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output
 		#needs PostFim.py, to convert the format to fim_closed for followup program
 		#~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output;;
@@ -132,9 +136,9 @@ case "$type_3" in
 	4)	echo mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -o $final_output -n
 		#10 nodes from ~/hostfile, no_cc(no connected components)
 		mpirun.mpich -np 10 -machinefile ~/hostfile /usr/bin/mpipython ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -o $final_output -n;;
-	5)	echo mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output -q 250000
+	5)	echo mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output
 		#hpc-cmb, nodes assigned by qsub
-		mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output -q 250000;;
+		mpiexec ~/script/annot/bin/MpiFromDatasetSignatureToPattern.py -k $schema -m $support -x $max_support -i $fim_output -s $edge_sig_vector_fname -o $final_output;;
 	*)	echo "MpiFromDatasetSignatureToPattern.py skipped";;
 esac
 
