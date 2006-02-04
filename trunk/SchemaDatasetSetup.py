@@ -17,8 +17,15 @@ Description:
 	a program to do dataset setup, which includes filename reordering,
 		file batch moving...
 '''
-
-import sys, os, getopt, csv
+import sys, os, math
+bit_number = math.log(sys.maxint)/math.log(2)
+if bit_number>40:       #64bit
+	sys.path.insert(0, os.path.expanduser('~/lib64/python'))
+	sys.path.insert(0, os.path.join(os.path.expanduser('~/script64/annot/bin')))
+else:   #32bit
+	sys.path.insert(0, os.path.expanduser('~/lib/python'))
+	sys.path.insert(0, os.path.join(os.path.expanduser('~/script/annot/bin')))
+import getopt, csv
 from sets import Set
 from file_batch_move import file_batch_move
 from file_rename import rename
