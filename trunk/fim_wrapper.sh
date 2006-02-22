@@ -3,11 +3,12 @@
 if test $# -lt 6
 then
 	echo "Usage:"
-	echo "    fim_wrapper.sh SCHEMA SG_MIN_SUPPORT MIN_SUPPORT MAX_SUPPORT FIM_SUPPORT RUNCODE NEWSFX PARAMETERS"
+	echo "    fim_wrapper.sh SCHEMA SG_MIN_SUPPORT MIN_SUPPORT MAX_SUPPORT FIM_SUPPORT FIM_EDGE_SUPPORT RUNCODE NEWSFX PARAMETERS"
 	echo 
 	echo "SG_MIN_SUPPORT is the minimum support for that summary graph."
 	echo "MIN_SUPPORT MAX_SUPPORT is to pick edges from summary graph."
-	echo "FIM_SUPPORT is the minimum support of the pattern"
+	echo "FIM_SUPPORT is the minimum support(no of datasets) of the pattern"
+	echo "FIM_EDGE_SUPPORT is the minimum no of edges for a pattern to be valid"
 	echo "	if RUNCODE[:3]='999', INPUT_FILE is FIM_SUPPORT; otherwise, it's fim_prefix"
 	echo "NEWSFX is to be attached to the INPUT_FILE."
 	echo "	if NEWSFX=='n', it'll be ignored"
@@ -48,12 +49,13 @@ sg_min_support=$2
 support=$3
 max_support=$4
 fim_support=$5
-runcode=$6
-newsfx=$7
+fim_edge_support=$6
+runcode=$7
+newsfx=$8
 parameter=''
-while test -n "$8"
+while test -n "$9"
 do
-parameter=$parameter' '$8
+parameter=$parameter' '$9
 shift
 done
 
@@ -65,7 +67,7 @@ type_5=`echo $runcode|awk '{print substr($0,5,1)}'`
 type_6=`echo $runcode|awk '{print substr($0,6,1)}'`
 
 edge_sig_vector_fname=~/bin/hhu_clustering/data/input/$schema\_$sg_min_support.sig_vector
-fim_prefix=$schema\m$support\x$max_support\f$fim_support
+fim_prefix=$schema\m$support\x$max_support\f$fim_support\e$fim_edge_support
 fim_input=~/tmp/fim_wrapper/$fim_prefix\_i
 closet_input_spec=$fim_input.spec
 closet_output=~/tmp/fim_wrapper/$fim_prefix\_closet_o
@@ -98,15 +100,15 @@ check_exit_status
 
 
 case "$type_2" in
-	1)	echo ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support
+	1)	echo ssh node29 ~/script/fimi06/bin/fim_closed $fim_input $fim_edge_support $fim_output $fim_support
 		#for app2, use big node
-		ssh node29 ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support;;
-	2)	echo ~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support
+		ssh node29 ~/script/fimi06/bin/fim_closed $fim_input $fim_edge_support $fim_output $fim_support;;
+	2)	echo ~/script/fimi06/bin/fim_closed $fim_input $fim_edge_support $fim_output $fim_support
 		#just run, (hpc-cmb)
-		~/script/fimi06/bin/fim_closed $fim_input 4 $fim_output $fim_support;;
-	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $fim_support
+		~/script/fimi06/bin/fim_closed $fim_input $fim_edge_support $fim_output $fim_support;;
+	3)	echo ~/script/hhu_clustering/bin/closet+ $closet_input_spec $fim_edge_support $fim_output $fim_support
 		#closet+ just run, (hpc-cmb)
-		~/script/hhu_clustering/bin/closet+ $closet_input_spec 4 $fim_output $fim_support;;
+		~/script/hhu_clustering/bin/closet+ $closet_input_spec $fim_edge_support $fim_output $fim_support;;
 		#echo ~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output
 		#needs PostFim.py, to convert the format to fim_closed for followup program
 		#~/script/annot/bin/PostFim.py -i $closet_output -m $support -o $fim_output;;
