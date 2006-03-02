@@ -13,7 +13,8 @@ then
 	echo "	5.gene_go_functions.py 6.graph_reorganize.py"
 	echo "	7.prepare_gene_id2no.py 8.fill_dataset_no2id.py"
 	echo
-	echo "  3rd digit: 1(node_type=1), 2(node_type=5)"
+	echo "3rd digit(go_informative_node.py):"
+	echo "  1(node_type=1), 2(node_type=5), 3(informative)"
 	exit
 fi
 
@@ -70,6 +71,8 @@ case "$type_3" in
 		~/script/annot/bin/GO/go_informative_node.py -k $schema -b >$go_file;;
 	2)	echo ~/script/annot/bin/GO/go_informative_node.py -k $schema -b -s 5 -m 160 -n5 -l $depth_cutoff \>$go_file
 		~/script/annot/bin/GO/go_informative_node.py -k $schema -b -s 5 -m 160 -n5 -l $depth_cutoff >$go_file;;
+	3)	echo "~/script/annot/bin/GO/go_informative_node.py -k $schema -b -n2 >$go_file"
+		~/script/annot/bin/GO/go_informative_node.py -k $schema -b -n2 >$go_file;;
 	*)	echo "go_informative_node.py skipped";;
 esac
 
