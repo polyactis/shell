@@ -17,6 +17,7 @@ echo "4. portland"
 echo "5. hto_eth0"
 echo "6. w1141"
 echo "7. default"
+echo "8. ipam"
 read a
 if [ $a = "1" ]; then
 	route del default gw src
@@ -69,5 +70,13 @@ if [ $a = "7" ]; then
 	iwconfig $interface essid "default"
 	iwconfig $interface key open
 	iwconfig $interface key off
+	dhclient $interface
+fi
+
+if [ $a = "8" ]; then
+	ifconfig eth0 down
+	route del default gw src
+	iwconfig $interface essid "ipam"
+	iwconfig $interface key 6F737472696368657332313433
 	dhclient $interface
 fi
