@@ -33,12 +33,9 @@ fi
 
 if [ $a = "3" ]; then
 	route del default gw src
-	iwconfig $interface essid "zzhao"
-	iwconfig $interface key 1234567890
-	ifconfig eth0 10.100.113.107
+	iwconfig $interface essid "sbc"
+	iwconfig $interface key E9D65EDFACAB792AB74C57C5D3
 	dhclient $interface
-	#ifconfig $interface 192.168.0.147
-	#route add default gw src
 fi
 
 
