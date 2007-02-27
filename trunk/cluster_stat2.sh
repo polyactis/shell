@@ -20,8 +20,8 @@ then
 	echo " 1(p_gene_lm),2(OneParameterCutoffSeeker.py)"
 	echo "3(p_gene_analysis.py):"
 	echo "	  1(from lm_table) 2(p_value 0.01) 3(p_value 10000)"
-	echo "5(filter.sh):"
-	echo "   1(qsub), 2(direct run)"
+	echo "5(filter.sh, only the 1st program, filter_clusters.py):"
+	echo "   1(ssh node-self and run), 2(direct run)"
 	exit
 fi
 
@@ -86,8 +86,8 @@ rpart_parameter=$parameter
 new_input_file=$input_file`~/script/annot/bin/arguments2string.py $rpart_parameter`
 echo "######## rpart_prediction.py ######"
 case "$type_1" in
-	1)	echo ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c $rpart_parameter
-		ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c $rpart_parameter
+	1)	echo ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c -u $rpart_parameter
+		ssh $HOSTNAME ~/script/annot/bin/rpart_prediction.py -k $schema -i $input_file -j $new_input_file -c -u $rpart_parameter
 		input_file=$new_input_file	#change input_file
 		derive_tables;;
 	*)	echo "rpart_prediction.py skipped";;
