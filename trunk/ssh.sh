@@ -1,9 +1,9 @@
 #!/bin/sh
 echo "Which host:"
-echo "1. hto-pc44"
+echo "1. dl324b-1"
 echo "2. hpc-opteron"
 echo "3. zhoudb"
-echo "4. app1"
+echo "4. dl324b-2"
 echo "5. app2"
 echo "6. zhoulab"
 echo "7. gan"
@@ -12,7 +12,7 @@ echo "9. hpc.usc.edu"
 echo "0. hpc-cmb.usc.edu"
 read a
 if [ $a = "1" ]; then
-	ssh hto-pc44.usc.edu -l yh -X
+	ssh dl324b-1.cmb.usc.edu -l yh -X
 fi
 if [ $a = "2" ]; then
 	ssh hpc-opteron.usc.edu -l yuhuang -X
@@ -24,7 +24,7 @@ fi
 
 
 if [ $a = "4" ]; then
-	ssh app1.cmb.usc.edu -X -l yuhuang
+	ssh dl324b-2.cmb.usc.edu -X -l yh
 fi
 
 if [ $a = "5" ]; then
