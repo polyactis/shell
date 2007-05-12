@@ -3,7 +3,7 @@ echo "Which host:"
 echo "1. dl324b-1"
 echo "2. hpc-opteron"
 echo "3. zhoudb"
-echo "4. dl324b-2"
+echo "4. banyan"
 echo "5. app2"
 echo "6. zhoulab"
 echo "7. gan"
@@ -24,7 +24,7 @@ fi
 
 
 if [ $a = "4" ]; then
-	ssh dl324b-2.cmb.usc.edu -X -l yh
+	ssh banyan.usc.edu -X -l crocea
 fi
 
 if [ $a = "5" ]; then
