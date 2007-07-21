@@ -12,7 +12,7 @@ fi
 echo "Which essid:"
 echo "1. USC"
 echo "2. Math"
-echo "3. zzhao"
+echo "3. sbc"
 echo "4. portland"
 echo "5. hto_eth0"
 echo "6. w1141"
