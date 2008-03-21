@@ -1,21 +1,30 @@
 #!/usr/bin/env python
 '''
-Usage:	file_batch_move.py -l FILE SRCDIR DSTDIR
+Usage:	file_batch_move.py [OPTIONS] -i SRCDIR -o DSTDIR
 
 Option:
-	SRCDIR is the source directory.
-	DSTDIR is the destiny directory.
+	-i ...,	SRCDIR is the source directory.
+	-o ...,	DSTDIR is the destiny directory.
 	-l ..., --list_file=..., FILE contains the names of those files to be moved.
-	-t ..., --type=...,	type of move, 0(default), 1, or 2
+		if not given, all file/dirs in SRCDIR but NOT in DSTDIR.
+	-t ..., --type=...,	type of move, 0(default), 1, 2, 3
 	-h, --help              show this help
+	
+Examples:
+	#print the file/dirs in ./Products/ but NOT in /usr/lib/zope2.9/lib/python/Products/
+	file_batch_move.py -t3 -i ./Products/ -o /usr/lib/zope2.9/lib/python/Products/
 	
 Description:
 	a program to move a bunch of files from one directory to another directory.
 	It is useful for remote linux machines with no GUI access.
+	It checks the DSTDIR to avoid name collision.
 	TYPE of move:
-	0:	symbolic link
-	1:	real move(mv)
-	2:	copy
+	0:	test run. report all files to move.
+	1:	symbolic link
+	2:	os.rename(like mv, but can't cross-device)
+	3:	copy
+	4:	os.popen("mv src_pathname dst_pathname"). call UNIX 'mv' command.
+
 '''
 
 import sys, os, math
@@ -26,7 +35,7 @@ if bit_number>40:       #64bit
 else:   #32bit
 	sys.path.insert(0, os.path.expanduser('~/lib/python'))
 	sys.path.insert(0, os.path.join(os.path.expanduser('~/script/annot/bin')))
-import getopt, csv
+import getopt, csv, traceback
 from sets import Set
 
 class file_batch_move:
@@ -35,31 +44,79 @@ class file_batch_move:
 		if not os.path.isdir(dstdir):
 			os.makedirs(dstdir)
 		self.dstdir = os.path.abspath(dstdir)
-		self.list_f = csv.reader(file(list_file))
-		#stores the files to move
-		self.files_to_move = Set()
+		self.list_file = list_file
 		#the mapping between the type and the real action.
-		move_dict = {0:os.symlink,
-			1:os.rename,
-			2:os.link}
+		move_dict = {0:self.print_fname,
+					1:os.symlink,
+			2:os.rename,
+			3:os.link,
+			4:self.call_mv}
 		self.move = move_dict[int(type)]
 	
-	def dstruc_loadin(self):
-		for row in self.list_f:
-			self.files_to_move.add(row[0])
-		self.no_of_files_to_move = len(self.files_to_move)
+	def call_mv(self, src_pathname, dst_pathname):
+		"""
+		2008-03-20
+			
+		"""
+		pipe_f = os.popen('mv %s %s'%(src_pathname, dst_pathname))
+		pipe_f_out = pipe_f.read()
+		if pipe_f_out:
+			sys.stderr.write("\tmv output: %s\n"%pipe_f_out)
 		
+	def print_fname(self, src_pathname, dst_pathname):
+		"""
+		2008-03-20
+			to have same interface as other objects in move_dict
+		"""
+		print src_pathname
+	
+	def dstruc_loadin(self, list_file):
+		"""
+		2008-03-20
+			restructure it to make it more independent
+		"""
+		sys.stderr.write("Reading a list of file/dirs from %s ... "%list_file)
+		list_f = csv.reader(file(list_file))
+		#stores the files to move
+		files_to_move = Set()
+		for row in list_f:
+			files_to_move.add(row[0])
+		sys.stderr.write("Done.\n")
+		return files_to_move
+	
+	def get_diff_list_in_src_against_dst_dir(self, srcdir, dstdir):
+		"""
+		2008-03-20
+			get a set of file/dirs in srcdir, but NOT in dstdir
+		"""
+		sys.stderr.write("Getting a list of file/dirs in %s but NOT in %s ... "%( srcdir, dstdir))
+		dst_obj_set = Set(os.listdir(dstdir))
+		files_to_move = Set()
+		for obj in os.listdir(srcdir):
+			if obj not in dst_obj_set:
+				files_to_move.add(obj)
+		sys.stderr.write("Done.\n")
+		return files_to_move
+	
 	def run(self):
-		self.dstruc_loadin()
+		"""
+		2008-03-20
+			if -l is not given, it'll try to move all file/dir in SRCDIR but NOT in DSTDIR.
+		"""
+		if self.list_file:
+			files_to_move = self.dstruc_loadin(self.list_file)
+		else:
+			files_to_move = self.get_diff_list_in_src_against_dst_dir(self.srcdir, self.dstdir)
 		
 		files = os.listdir(self.srcdir)
+		no_of_files_to_move = len(files_to_move)
 		sys.stderr.write("\tTotally, %d files to be moved from %s to %s.\n"%\
-			(self.no_of_files_to_move, self.srcdir, self.dstdir))
+			(no_of_files_to_move, self.srcdir, self.dstdir))
 		i=0
 		for f in files:
-			if f in self.files_to_move:
+			if f in files_to_move:
 				i += 1
-				sys.stderr.write("%d/%d:\t%s\n"%(i, self.no_of_files_to_move, f))
+				sys.stderr.write("%d/%d:\t%s\n"%(i, no_of_files_to_move, f))
 				src_pathname = os.path.join(self.srcdir, f)
 				dst_pathname = os.path.join(self.dstdir, f)
 				try:
@@ -73,25 +130,33 @@ if __name__ == '__main__':
 	if len(sys.argv) == 1:
 		print __doc__
 		sys.exit(2)
+	
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hl:t:", ["help", "list_file=", "type="])
+		opts, args = getopt.getopt(sys.argv[1:], "hi:o:l:t:", ["help", "list_file=", "type="])
 	except:
-		print __doc__
+		traceback.print_exc()
+		print sys.exc_info()
 		sys.exit(2)
 	
+	srcdir = None
+	dstdir = None
 	list_file = ''
 	type = 0
 	for opt, arg in opts:
 		if opt in ("-h", "--help"):
 			print __doc__
 			sys.exit(2)
+		elif opt in ("-i",):
+			srcdir = arg
+		elif opt in ("-o",):
+			dstdir = arg
 		elif opt in ("-l", "--list_file"):
 			list_file = arg
 		elif opt in ("-t", "--type"):
 			type = int(arg)
 	
-	if list_file and len(args) == 2:
-		instance = file_batch_move(args[0], args[1], list_file, type)
+	if srcdir and dstdir:
+		instance = file_batch_move(srcdir, dstdir, list_file, type)
 		instance.run()
 	else:
 		print __doc__
