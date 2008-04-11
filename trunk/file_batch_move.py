@@ -7,6 +7,7 @@ Option:
 	-o ...,	DSTDIR is the destiny directory.
 	-l ..., --list_file=..., FILE contains the names of those files to be moved.
 		if not given, all file/dirs in SRCDIR but NOT in DSTDIR.
+		if 2nd-column (tab delimited) is available, it's regarded as the new filename.
 	-t ..., --type=...,	type of move, 0(default), 1, 2, 3
 	-h, --help              show this help
 	
@@ -22,7 +23,7 @@ Description:
 	0:	test run. report all files to move.
 	1:	symbolic link
 	2:	os.rename(like mv, but can't cross-device)
-	3:	copy
+	3:	os.link(like copy, but can't cross-device)
 	4:	os.popen("mv src_pathname dst_pathname"). call UNIX 'mv' command.
 
 '''
@@ -72,34 +73,43 @@ class file_batch_move:
 	
 	def dstruc_loadin(self, list_file):
 		"""
+		2008-04-11
+			if list_file is two-column, 2nd column is treated as destination filename to be renamed to
 		2008-03-20
 			restructure it to make it more independent
 		"""
 		sys.stderr.write("Reading a list of file/dirs from %s ... "%list_file)
-		list_f = csv.reader(file(list_file))
+		list_f = csv.reader(file(list_file), delimiter='\t')
 		#stores the files to move
-		files_to_move = Set()
+		files_to_move = {}
 		for row in list_f:
-			files_to_move.add(row[0])
+			if len(row)==2:
+				files_to_move[row[0]] = row[1]
+			else:
+				files_to_move[row[0]] = -1
 		sys.stderr.write("Done.\n")
 		return files_to_move
 	
 	def get_diff_list_in_src_against_dst_dir(self, srcdir, dstdir):
 		"""
+		2008-04-11
+			files_to_move becomes a dictionary. value=-1 because of no file renaming.
 		2008-03-20
 			get a set of file/dirs in srcdir, but NOT in dstdir
 		"""
 		sys.stderr.write("Getting a list of file/dirs in %s but NOT in %s ... "%( srcdir, dstdir))
 		dst_obj_set = Set(os.listdir(dstdir))
-		files_to_move = Set()
+		files_to_move = {}
 		for obj in os.listdir(srcdir):
 			if obj not in dst_obj_set:
-				files_to_move.add(obj)
+				files_to_move[obj] = -1
 		sys.stderr.write("Done.\n")
 		return files_to_move
 	
 	def run(self):
 		"""
+		2008-04-11
+			if list_file is two-column, 2nd column is treated as destination filename to be renamed to
 		2008-03-20
 			if -l is not given, it'll try to move all file/dir in SRCDIR but NOT in DSTDIR.
 		"""
@@ -118,7 +128,11 @@ class file_batch_move:
 				i += 1
 				sys.stderr.write("%d/%d:\t%s\n"%(i, no_of_files_to_move, f))
 				src_pathname = os.path.join(self.srcdir, f)
-				dst_pathname = os.path.join(self.dstdir, f)
+				dst_fname = files_to_move[f]
+				if dst_fname ==-1:	#same filename
+					dst_pathname = os.path.join(self.dstdir, f)
+				else:	#change filename
+					dst_pathname = os.path.join(self.dstdir, dst_fname)
 				try:
 					self.move(src_pathname, dst_pathname)
 				#symlink and link will fail if dst_pathname already exists.
