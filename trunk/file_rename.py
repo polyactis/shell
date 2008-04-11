@@ -17,7 +17,7 @@ Examples:
 
 Description:
 	Choices:
-	1: restore
+	1: restore. Change the filenames according to mapping file. 2nd-column new filename -> 1st-column old.
 	2: prefix_ext_swap
 	3: lower_case
 	4: datasets_sort
