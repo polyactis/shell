@@ -4,7 +4,7 @@ echo "1. dl324b-1"
 echo "2. hpc-opteron"
 echo "3. zhoudb"
 echo "4. banyan"
-echo "5. app2"
+echo "5. natural.uchicago.edu"
 echo "6. zhoulab"
 echo "7. gan"
 echo "8. 10.113.0.1"
@@ -28,7 +28,8 @@ if [ $a = "4" ]; then
 fi
 
 if [ $a = "5" ]; then
-	ssh app2.cmb.usc.edu -X -l yuhuang
+	ssh iamhere@natural.uchicago.edu
+	#ssh app2.cmb.usc.edu -X -l yuhuang
 fi
 
 if [ $a = "6" ]; then
