@@ -5,6 +5,7 @@ Usage: count_columns.py [OPTION] FILES
 Option:
 	FILES are a list of files whose columns are going to be counted.
 	-d ... --delimiter=...,	delimiter character used to seperate columns, \t(default)
+	-n ...,	number of lines to read into the file and report the number of columns for each, 1(default)
 	-h, --help              show this help
 	
 Examples:
@@ -24,14 +25,17 @@ else:   #32bit
 import sys, os, re, getopt, csv
 
 class count_columns:
-	def __init__(self, file_list, delimiter):
+	def __init__(self, file_list, delimiter, no_of_lines):
 		"""
+		2008-08-15
+			add option no_of_lines. number of lines to read into the file and report the number of columns for each, 1(default)
 		05-14-05
 			dir is changed to file_list
 		"""
 		self.files = file_list
 		self.files.sort()
 		self.delimiter = delimiter
+		self.no_of_lines = int(no_of_lines)
 
 	def run(self):
 		"""
@@ -44,8 +48,9 @@ class count_columns:
 			src_pathname = f
 			reader = csv.reader(file(src_pathname), delimiter=self.delimiter)
 			try:
-				row = reader.next()
-				sys.stdout.write("\t%d\n"%len(row))
+				for i in range(self.no_of_lines):
+					row = reader.next()
+					sys.stdout.write("\tline %s: %d\n"%(i, len(row)))
 			except:
 				sys.stdout.write('csv reader.next error\n')
 			del reader
@@ -57,22 +62,24 @@ if __name__ == '__main__':
 		sys.exit(2)
 		
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "delimiter="])
+		opts, args = getopt.getopt(sys.argv[1:], "hd:n:", ["help", "delimiter="])
 	except:
 		print __doc__
 		sys.exit(2)
 
 	delimiter = '\t'
-	
+	no_of_lines = 1
 	for opt, arg in opts:
 		if opt in ("-h", "--help"):
 			print __doc__
 			sys.exit(2)
 		elif opt in ("-d", "--delimiter"):
 			delimiter = arg
+		elif opt in ("-n",):
+			no_of_lines = int(arg)
 
 	if len(args)>=1:
-		instance = count_columns(args, delimiter)
+		instance = count_columns(args, delimiter, no_of_lines)
 		instance.run()
 	else:
 		print __doc__
