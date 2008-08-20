@@ -25,6 +25,7 @@ Description:
 	2:	os.rename(like mv, but can't cross-device)
 	3:	os.link(like copy, but can't cross-device)
 	4:	os.popen("mv src_pathname dst_pathname"). call UNIX 'mv' command.
+	5:	os.popen("cp src_pathname dst_pathname"). call UNIX 'cp' command.
 
 '''
 
@@ -51,7 +52,8 @@ class file_batch_move:
 					1:os.symlink,
 			2:os.rename,
 			3:os.link,
-			4:self.call_mv}
+			4:self.call_mv,
+			5:self.call_cp}
 		self.move = move_dict[int(type)]
 	
 	def call_mv(self, src_pathname, dst_pathname):
@@ -63,7 +65,17 @@ class file_batch_move:
 		pipe_f_out = pipe_f.read()
 		if pipe_f_out:
 			sys.stderr.write("\tmv output: %s\n"%pipe_f_out)
-		
+	
+	def call_cp(self, src_pathname, dst_pathname):
+		"""
+		2008-08-19
+			real copy, could cross device compared to os.link
+		"""
+		pipe_f = os.popen('cp %s %s'%(src_pathname, dst_pathname))
+		pipe_f_out = pipe_f.read()
+		if pipe_f_out:
+			sys.stderr.write("\tmv output: %s\n"%pipe_f_out)
+	
 	def print_fname(self, src_pathname, dst_pathname):
 		"""
 		2008-03-20
