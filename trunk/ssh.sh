@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Which host:"
 echo "1. dl324b-1"
-echo "2. hpc-opteron"
+echo "2. mahogany"
 echo "3. zhoudb"
 echo "4. banyan"
 echo "5. natural.uchicago.edu"
@@ -15,7 +15,8 @@ if [ $a = "1" ]; then
 	ssh dl324b-1.cmb.usc.edu -l yh -X
 fi
 if [ $a = "2" ]; then
-	ssh hpc-opteron.usc.edu -l yuhuang -X
+	ssh yh@mahogany -X
+	#ssh hpc-opteron.usc.edu -l yuhuang -X
 fi
 
 if [ $a = "3" ]; then
