@@ -15,7 +15,7 @@ if [ $a = "1" ]; then
 	ssh dl324b-1.cmb.usc.edu -l yh -X
 fi
 if [ $a = "2" ]; then
-	ssh yh@mahogany -X
+	ssh yh@mahogany.usc.edu -X
 	#ssh hpc-opteron.usc.edu -l yuhuang -X
 fi
 
