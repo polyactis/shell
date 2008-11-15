@@ -71,7 +71,7 @@ class file_batch_move:
 		2008-08-19
 			real copy, could cross device compared to os.link
 		"""
-		pipe_f = os.popen('cp %s %s'%(src_pathname, dst_pathname))
+		pipe_f = os.popen('cp "%s" "%s"'%(src_pathname, dst_pathname))
 		pipe_f_out = pipe_f.read()
 		if pipe_f_out:
 			sys.stderr.write("\tmv output: %s\n"%pipe_f_out)
