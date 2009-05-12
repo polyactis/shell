@@ -118,7 +118,7 @@ if [ $a = "11" ]; then
 	ifconfig eth0 down
 	iwconfig $interface essid "FFGG"
 	iwconfig $interface key "2138393939"
-	#dhclient $interface
-	ifconfig ath0 192.168.10.177
-	route add default gw 192.168.10.2
+	dhclient $interface
+	#ifconfig ath0 192.168.10.177
+	#route add default gw 192.168.10.2
 fi
