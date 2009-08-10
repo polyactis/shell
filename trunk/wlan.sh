@@ -23,6 +23,7 @@ echo "9. DLINK_WIRELESS"
 echo "0. aliso creek"
 echo "10. Big Sky, Montana"
 echo "11. FFGG"
+echo "12. Martinez"
 read a
 if [ $a = "1" ]; then
 	route del default gw src
@@ -121,4 +122,12 @@ if [ $a = "11" ]; then
 	dhclient $interface
 	#ifconfig ath0 192.168.10.177
 	#route add default gw 192.168.10.2
+fi
+if [ $a = "12" ]; then
+	ifconfig eth0 down
+	iwconfig $interface essid "Martinez"
+	iwconfig $interface key "b2ac30ba8b"
+	dhclient $interface
+	ifconfig ath0 192.168.0.17
+	route add default gw 192.168.0.1
 fi
