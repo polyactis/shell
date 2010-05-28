@@ -5,7 +5,7 @@ echo "2. mahogany"
 echo "3. zhoudb"
 echo "4. banyan"
 echo "5. natural.uchicago.edu"
-echo "6. zhoulab"
+echo "6. bamboo"
 echo "7. cypress"
 echo "8. 10.113.0.1"
 echo "9. hpc.usc.edu"
@@ -35,7 +35,7 @@ if [ $a = "5" ]; then
 fi
 
 if [ $a = "6" ]; then
-	ssh zhoulab.usc.edu -l yh -X
+	ssh bamboo.usc.edu -l crocea -X
 fi
 
 if [ $a = "7" ]; then
