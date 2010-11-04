@@ -2,7 +2,7 @@
 echo "Which host:"
 echo "1. dl324b-1"
 echo "2. mahogany"
-echo "3. zhoudb"
+echo "3. hoffman2"
 echo "4. banyan"
 echo "5. natural.uchicago.edu"
 echo "6. bamboo"
@@ -21,7 +21,8 @@ if [ $a = "2" ]; then
 fi
 
 if [ $a = "3" ]; then
-	ssh zhoudb.usc.edu -l yh -X
+	#ssh zhoudb.usc.edu -l yh -X
+	ssh hoffman2.idre.ucla.edu -l polyacti -X
 fi
 
 
