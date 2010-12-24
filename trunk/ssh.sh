@@ -7,8 +7,8 @@ echo "4. banyan"
 echo "5. natural.uchicago.edu"
 echo "6. bamboo"
 echo "7. cypress"
-echo "8. 10.113.0.1"
-echo "9. hpc.usc.edu"
+echo "8. ssh-gw.gmi.oeaw"
+echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
 echo "11. gan"
 read a
@@ -44,11 +44,13 @@ if [ $a = "7" ]; then
 fi
 
 if [ $a = "8" ]; then
-	ssh yh@10.113.0.1 -X 
+	ssh yu.huang@ssh-gw.gmi.oeaw.ac.at -p 22222 -X
+	#ssh yh@10.113.0.1 -X 
 fi
 
 if [ $a = "9" ]; then
-	ssh yuhuang@hpc.usc.edu -X 
+	ssh yu.huang@mgmt01.gmi.oeaw.ac.at -X
+	#ssh yuhuang@hpc.usc.edu -X 
 fi
 
 if [ $a = "0" ]; then
