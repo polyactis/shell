@@ -4,7 +4,7 @@ echo "1. dl324b-1"
 echo "2. mahogany"
 echo "3. hoffman2"
 echo "4. banyan"
-echo "5. natural.uchicago.edu"
+echo "5. uclaOffice"
 echo "6. bamboo"
 echo "7. cypress"
 echo "8. ssh-gw.gmi.oeaw"
@@ -31,7 +31,8 @@ if [ $a = "4" ]; then
 fi
 
 if [ $a = "5" ]; then
-	ssh iamhere@natural.uchicago.edu
+	ssh -X yh@10.47.163.45
+	#ssh iamhere@natural.uchicago.edu
 	#ssh app2.cmb.usc.edu -X -l yuhuang
 fi
 
