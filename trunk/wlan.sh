@@ -11,7 +11,7 @@ if [ $choice = "e" ]; then
 fi
 echo "Which essid:"
 echo "1. USC"
-echo "2. Math"
+echo "2. ICNN"
 echo "3. sbc"
 echo "4. portland"
 echo "5. hto_eth0"
@@ -35,7 +35,8 @@ if [ $a = "1" ]; then
 fi
 if [ $a = "2" ]; then
 	route del default gw src
-	iwconfig $interface essid "Math Grad Lab"
+	iwconfig $interface essid "ICNN"
+	iwconfig $interface key "hl-5370dw"
 	dhclient $interface
 fi
 
