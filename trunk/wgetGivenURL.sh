@@ -7,7 +7,9 @@ then
 	echo
 	echo "	Given URLs embedded in the file (lines beginned with # ignored), wget the contents recursively into TargetDirectory."
 	echo "	Assume the URLs don't contain space. Not sure whether it'll be split if there is a space."
-	exit
+	echo
+	echo "Examples:	~/script//shell/wgetGivenURL.sh ../wustl_url.txt ./"
+exit
 fi
 
 urlFile=$1
