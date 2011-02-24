@@ -31,7 +31,8 @@ if [ $a = "4" ]; then
 fi
 
 if [ $a = "5" ]; then
-	ssh -X yh@10.47.163.45
+	ssh -X yh@149.142.212.14 -p 1999
+	#ssh -X yh@10.47.163.45
 	#ssh iamhere@natural.uchicago.edu
 	#ssh app2.cmb.usc.edu -X -l yuhuang
 fi
