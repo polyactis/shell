@@ -1,7 +1,7 @@
 #!/bin/sh
 ## 2010-2-23 script to forward any IPADDR:DPORT request to PORTFWIP:PORTFW
 ## masquerading shall be setup beforehand from PORTFWIP to outside on IPADDR.
-## one note: on machine PORTFWIP, the route to "outside" has to go through IPADDR
+## one note: on machine PORTFWIP, the route to "outside" has to go through IPADDR (no longer required due to SNAT/MASQUERADE in the end).
 
 
 IPTABLES=iptables
@@ -38,6 +38,12 @@ $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL 
 
 echo $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
 $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+
+### 2011-2-23 make sure PORTFWIP could find its way back through the tun0 network.
+### either of the two below works. By SNAT, the source IP becomes part of the network PORTFWIP is in.
+### By MASQUERADE, the source IP becomes that of the VPN server on the tun0.
+iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o $INTERNAL_INTERFACE -j SNAT -d $PORTFWIP --to 10.8.0.0-10.8.0.253
+#iptables -t nat -D POSTROUTING -d $PORTFWIP/32 -o $INTERNAL_INTERFACE -j MASQUERADE
 
 # echo $IPTABLES -A FORWARD -o $EXTERNAL_INTERFACE -i $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 # $IPTABLES -A FORWARD -o $EXTERNAL_INTERFACE -i $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
