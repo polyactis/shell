@@ -1,6 +1,8 @@
 #!/bin/sh
 ## 2010-2-23 script to forward any IPADDR:DPORT request to PORTFWIP:PORTFW
 ## masquerading shall be setup beforehand from PORTFWIP to outside on IPADDR.
+## one note: on machine PORTFWIP, the route to "outside" has to go through IPADDR
+
 
 IPTABLES=iptables
 EXTERNAL_INTERFACE=eth1
