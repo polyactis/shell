@@ -1,18 +1,53 @@
 #!/bin/sh
-## 2010-2-23 script to forward any IPADDR:DPORT request to PORTFWIP:PORTFW
-## masquerading shall be setup beforehand from PORTFWIP to outside on IPADDR.
-## one note: on machine PORTFWIP, the route to "outside" has to go through IPADDR (no longer required due to SNAT/MASQUERADE in the end).
+if test $# -lt 6
+then
+	echo "Usage: $0 EXT_INTERFACE EXT_IP EXT_PORT INT_INTERFACE INT_IP INT_PORT [PROTOCOL] [CLEARCHAIN] [INTERNAL_NETWORK]"
+	echo
 
+	echo "	2010-2-23 script to forward any EXT_IP:EXT_PORT request to INT_IP:INT_PORT"
+	echo 	masquerading shall be setup beforehand from INT_IP to outside on EXT_IP.
+	echo "	one note: on machine INT_IP, the route to "outside" has to go through EXT_IP (no longer required due to SNAT/MASQUERADE in the end)."
+	echo "	CLEARCHAIN: 0 or 1. whether to clear the PREROUTING chain of nat and FORWARD chain of filter or not."
+	echo "	PROTOCOL is tcp by default."
+	echo "	CLEARCHAIN will not be carried out by default."
+	echo "	INTERNAL_NETWORK is 3-number representation of the network INT_INTERFACE resides in. 10.8.0 by default."
+	echo
+	echo "Examples:	"
+	echo "	Forward ssh port of 10.0.0.7 to external port 2222. (login internal computer from outside)"
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 2222 tun0 10.0.0.7 22"
+	echo "	Forward internal postgresql port to outside and cleanup PREROUTING and FORWARD chain."
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 1 10.113.0"
+exit
+fi
 
 IPTABLES=iptables
-EXTERNAL_INTERFACE=eth1
-IPADDR=128.125.86.114
-DPORT=2222
 
-PORTFWIP=10.8.0.6
-PORTFW=1999
-INTERNAL_INTERFACE=tun0
+EXT_INTERFACE=$1
+EXT_IP=$2
+EXT_PORT=$3
+
+INT_INTERFACE=$4
+INT_IP=$5
+INT_PORT=$6
+
 PROTOCOL=tcp
+if test -n "$7"
+then
+	PROTOCOL=$7
+fi
+
+CLEARCHAIN=0
+if test -n "$8"
+then
+	CLEARCHAIN=$8
+fi
+
+INTERNAL_NETWORK=10.8.0
+if test -n "$9"
+then
+	INTERNAL_NETWORK=$9
+fi
+
 #PROTOCOL=udp
 echo 1 > /proc/sys/net/ipv4/ip_forward
 echo 1 >/proc/sys/net/ipv4/ip_dynaddr
@@ -20,33 +55,36 @@ modprobe ip_conntrack
 modprobe iptable_nat
 modprobe iptable_mangle
 
-$IPTABLES -F PREROUTING -t nat
-$IPTABLES -F FORWARD
+if test $CLEARCHAIN = "1"
+then
+	$IPTABLES -F PREROUTING -t nat
+	$IPTABLES -F FORWARD
+fi
 
-echo $IPTABLES -t nat -A PREROUTING -i $EXTERNAL_INTERFACE -p $PROTOCOL -d $IPADDR --dport $DPORT -j DNAT --to-destination $PORTFWIP:$PORTFW
-$IPTABLES -t nat -A PREROUTING -i $EXTERNAL_INTERFACE -p $PROTOCOL -d $IPADDR --dport $DPORT -j DNAT --to-destination $PORTFWIP:$PORTFW
+echo $IPTABLES -t nat -A PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+$IPTABLES -t nat -A PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
 
-echo $IPTABLES -t nat -A PREROUTING -i $EXTERNAL_INTERFACE -p $PROTOCOL -d $IPADDR --dport $DPORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
-$IPTABLES -t nat -A PREROUTING -i $EXTERNAL_INTERFACE -p $PROTOCOL -d $IPADDR --dport $DPORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+echo $IPTABLES -t nat -A PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+$IPTABLES -t nat -A PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
 
-#echo $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+#echo $IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 
-echo $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL -d $PORTFWIP --dport $PORTFW -j ACCEPT
-$IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL -d $PORTFWIP  --dport $PORTFW  -j ACCEPT
+echo $IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP --dport $INT_PORT -j ACCEPT
+$IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP  --dport $INT_PORT  -j ACCEPT
 
-echo $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
-$IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+echo $IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+$IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
 
-### 2011-2-23 make sure PORTFWIP could find its way back through the tun0 network.
-### either of the two below works. By SNAT, the source IP becomes part of the network PORTFWIP is in.
+### 2011-2-23 make sure INT_IP could find its way back through the tun0 network.
+### either of the two below works. By SNAT, the source IP becomes part of the network INT_IP is in.
 ### By MASQUERADE, the source IP becomes that of the VPN server on the tun0.
-iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o $INTERNAL_INTERFACE -j SNAT -d $PORTFWIP --to 10.8.0.0-10.8.0.253
-#iptables -t nat -D POSTROUTING -d $PORTFWIP/32 -o $INTERNAL_INTERFACE -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o $INT_INTERFACE -j SNAT -d $INT_IP --to $INTERNAL_NETWORK.0-$INTERNAL_NETWORK.253
+#iptables -t nat -D POSTROUTING -d $INT_IP/32 -o $INT_INTERFACE -j MASQUERADE
 
-# echo $IPTABLES -A FORWARD -o $EXTERNAL_INTERFACE -i $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES -A FORWARD -o $EXTERNAL_INTERFACE -i $INTERNAL_INTERFACE -p $PROTOCOL  -d $PORTFWIP --dport $PORTFW -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# echo $IPTABLES -A FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES -A FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
-## $IPTABLES -A FORWARD -i $INTERNAL_INTERFACE -o $EXTERNAL_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
-## $IPTABLES -A FORWARD -i $EXTERNAL_INTERFACE -o $INTERNAL_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
+## $IPTABLES -A FORWARD -i $INT_INTERFACE -o $EXT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
+## $IPTABLES -A FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
