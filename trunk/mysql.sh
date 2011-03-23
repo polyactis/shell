@@ -4,6 +4,6 @@
 # 	Running without any argument will connect to localhost's stock_250k.
 #	./mysql.sh
 #
-# 	Usual "$1 $2" argument would be "-h papaya".
+# 	All arguments will be passed to mysql. Usual argument would be "-h papaya".
 #	./mysql.sh -h papaya
-mysql -u yh -p $1 $2 --pager=less stock_250k
+mysql -u yh -p $* --pager=less stock_250k
