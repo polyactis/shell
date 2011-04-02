@@ -27,7 +27,7 @@ fi
 
 
 if [ $a = "4" ]; then
-	ssh banyan.usc.edu -X -l crocea
+	ssh  -X 10.47.163.200 -l crocea
 fi
 
 if [ $a = "5" ]; then
