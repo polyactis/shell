@@ -10,7 +10,7 @@ echo "7. cypress"
 echo "8. ssh-gw.gmi.oeaw"
 echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
-echo "11. gan"
+echo "11. aludra.usc.edu"
 read a
 if [ $a = "1" ]; then
 	ssh dl324b-1.cmb.usc.edu -l yh -X
@@ -60,5 +60,6 @@ if [ $a = "0" ]; then
 fi
 
 if [ $a = "11" ]; then
-	ssh yh@gan.usc.edu -X
+	ssh yuhuang@aludra.usc.edu -X
+	#ssh yh@gan.usc.edu -X
 fi
