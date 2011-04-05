@@ -6,7 +6,7 @@
 
 # must be executed before the openvpn init script
 oldDefaultGW=`route -n |grep ^0.0.0.0|awk '{print $2}'`
-echo /etc/init.d/openvpn start
+/etc/init.d/openvpn start
 sleep 3;	#wait 3 seconds for the tun0 to be setup
 vpnDefaultGW=`route -n |grep ^0.0.0.0|awk '{print $2}'`
 echo route del default gw $vpnDefaultGW
