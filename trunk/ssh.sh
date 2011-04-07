@@ -11,6 +11,7 @@ echo "8. ssh-gw.gmi.oeaw"
 echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
 echo "11. aludra.usc.edu"
+echo "12. banyan through dl324b-1"
 read a
 if [ $a = "1" ]; then
 	ssh dl324b-1.cmb.usc.edu -l yh -X
@@ -62,4 +63,7 @@ fi
 if [ $a = "11" ]; then
 	ssh yuhuang@aludra.usc.edu -X
 	#ssh yh@gan.usc.edu -X
+fi
+if [ $a = "12" ]; then
+	ssh -p 2222 dl324b-1.cmb.usc.edu -l crocea -X
 fi
