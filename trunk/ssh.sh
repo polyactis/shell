@@ -12,7 +12,7 @@ echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
 echo "11. aludra.usc.edu"
 echo "12. banyan through dl324b-1"
-echo "13. autism server 10.47.166.197"
+echo "13. autism server 10.47.165.148"
 read a
 if [ $a = "1" ]; then
 	ssh dl324b-1.cmb.usc.edu -l yh -X
@@ -70,6 +70,6 @@ if [ $a = "12" ]; then
 fi
 
 if [ $a = "13" ]; then
-	ssh yh@10.47.166.197 -X
+	ssh yh@10.47.165.148 -X
 fi
 
