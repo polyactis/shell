@@ -16,8 +16,10 @@ then
 	echo "Examples:	"
 	echo "	Forward ssh port of 10.0.0.7 to external port 2222. (login internal computer from outside)"
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 2222 tun0 10.0.0.7 22"
-	echo "	Forward internal postgresql port to outside and cleanup PREROUTING and FORWARD chain."
-	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 1 10.113.0 1"
+	echo "	Remove all changes made to the iptables for forwarding internal postgresql port to outside."
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0 1"
+	echo "	Forward internal postgresql port to outside. Clear the PREROUTING and FORWARD chain."
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0"
 exit
 fi
 
