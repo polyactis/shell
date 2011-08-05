@@ -20,6 +20,8 @@ then
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0 1"
 	echo "	Forward internal postgresql port to outside. Clear the PREROUTING and FORWARD chain."
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0"
+	echo "	Forward port range 40000-45000 of 10.0.0.7 to external same port range."
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 40000:45000 tun0 10.0.0.7 40000:45000"
 exit
 fi
 
@@ -74,31 +76,41 @@ then
 	$IPTABLES -F FORWARD
 fi
 
-echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
-$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+# before routing, destination-NAT: translate any request to EXT_IP:EXT_PORT to a request to INT_IP:INT_PORT
+echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
+$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
 
-echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
-$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP --dport $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+### 2011-8-4 INT_PORT in "--to-destination $INT_IP:$INT_PORT " below uses port1-port2 to describe a port range. so use multiport to keep consistency.
+#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
 
-#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# log (not really working)
+#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
 
+#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
-echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP --dport $INT_PORT -j ACCEPT
-$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP  --dport $INT_PORT  -j ACCEPT
+#forward external interface to internal interface
+echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP -m multiport --dports $INT_PORT -j ACCEPT
+$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP  -m multiport --dports $INT_PORT  -j ACCEPT
 
-echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
-$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+# log (not working)
+#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+#$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+
+# echo log
+#echo $IPTABLES $CHAIN_OPERATION INPUT -m state --state NEW -p tcp -m multiport --dports 80 -j LOG --log-prefix "NEW_HTTP_CONN:"
 
 ### 2011-2-23 make sure INT_IP could find its way back through the tun0 network.
 ### either of the two below works. By SNAT, the source IP becomes part of the network INT_IP is in.
 ### By MASQUERADE, the source IP becomes that of the VPN server on the tun0.
+# after routing, source NAT, translate requests from any IP on the INT_INTERFACE to a range 50-253 on the internal network
 echo iptables -t nat $CHAIN_OPERATION POSTROUTING -s 0.0.0.0/0 -o $INT_INTERFACE -j SNAT -d $INT_IP --to $INTERNAL_NETWORK.50-$INTERNAL_NETWORK.253
 iptables -t nat $CHAIN_OPERATION POSTROUTING -s 0.0.0.0/0 -o $INT_INTERFACE -j SNAT -d $INT_IP --to $INTERNAL_NETWORK.50-$INTERNAL_NETWORK.253
 #iptables -t nat -D POSTROUTING -d $INT_IP/32 -o $INT_INTERFACE -j MASQUERADE
 
-# echo $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP --dport $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# echo $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 ## $IPTABLES $CHAIN_OPERATION FORWARD -i $INT_INTERFACE -o $EXT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
 ## $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
