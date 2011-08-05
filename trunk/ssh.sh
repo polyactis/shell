@@ -40,7 +40,7 @@ if [ $a = "5" ]; then
 fi
 
 if [ $a = "6" ]; then
-	ssh bamboo.usc.edu -l crocea -X
+	ssh 10.47.163.137 -l crocea -X
 fi
 
 if [ $a = "7" ]; then
