@@ -6,7 +6,7 @@ echo "3. hoffman2"
 echo "4. banyan"
 echo "5. uclaOffice"
 echo "6. bamboo"
-echo "7. cypress"
+echo "7. cli.globusonline.org"
 echo "8. ssh-gw.gmi.oeaw"
 echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
@@ -44,7 +44,8 @@ if [ $a = "6" ]; then
 fi
 
 if [ $a = "7" ]; then
-	ssh yh@cypress.usc.edu -X
+	#ssh yh@cypress.usc.edu -X
+	ssh polyactis@cli.globusonline.org
 fi
 
 if [ $a = "8" ]; then
