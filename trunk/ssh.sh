@@ -18,7 +18,7 @@ echo "b. hpc-login2.usc.edu"
 
 read a
 if [ $a = "1" ]; then
-	ssh dl324b-1.cmb.usc.edu -l yh -X
+	ssh dl324b-1.cmb.usc.edu -l crocea -X
 fi
 if [ $a = "2" ]; then
 	#ssh crocea@mahogany.usc.edu -X
