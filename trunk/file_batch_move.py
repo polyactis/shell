@@ -47,6 +47,7 @@ class file_batch_move:
 		if not given, all file/dirs in SRCDIR but NOT in DSTDIR.\
 		if 2nd-column (tab delimited) is available, it is regarded as the new filename.', ],\
 						('move_type', 1, int): [0, 't', 1, 'type of move, 0(default), 1, 2, 3', ],\
+						('sync_type', 1, int): [0, 's', 1, 'type of sync, 0(size + existence), 1 (existence)', ],\
 						('debug', 0, int): [0, 'b', 0, 'toggle debug mode'],\
 						('report', 0, int): [0, 'r', 0, 'toggle report, more verbose stdout/stderr.']}
 	
@@ -149,7 +150,7 @@ class file_batch_move:
 			if os.path.exists(dst_abs_path):
 				src_file_size = os.path.getsize(src_abs_path)
 				dst_file_size = os.path.getsize(dst_abs_path)
-				if dst_file_size<src_file_size:	#2011-8-31 smaller, need to copy as well.
+				if self.sync_type==0 and dst_file_size<src_file_size:	#2011-8-31 smaller, need to copy as well.
 					files_to_move[src_abs_path] = -1
 			else:
 				#if src_abs_path not in dst_obj_set:
