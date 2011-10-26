@@ -15,6 +15,7 @@ echo "12. banyan through dl324b-1"
 echo "13. autism server 10.47.165.148"
 echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
+echo "c. vervetNFS 10.47.163.171 through dl324b-1"
 
 read a
 if [ $a = "1" ]; then
@@ -86,3 +87,6 @@ if [ $a = "b" ]; then
 	ssh yuhuang@hpc-login2.usc.edu -X
 fi
 
+if [ $a = "c" ]; then
+	ssh -p 22222 dl324b-1.cmb.usc.edu -l crocea -X
+fi
