@@ -23,6 +23,7 @@ Description:
 	3:	os.link(like copy, but can't cross-device)
 	4:	os.popen("mv src_pathname dst_pathname"). call UNIX 'mv' command.
 	5:	os.popen("cp src_pathname dst_pathname"). call UNIX 'cp' command.
+	6:	os.popen("cp -p src_pathname dst_pathname"). call UNIX 'cp -apr' command.
 	If argument dstdir2 is given, comparison is still between SRCDIR and DSTDIR but data is copied from SRCDIR to dstdir2.
 '''
 
@@ -66,7 +67,8 @@ class file_batch_move:
 			2:os.rename,
 			3:os.link,
 			4:self.call_mv,
-			5:self.call_cp}
+			5:self.call_cp,
+			6:self.call_cp_p}
 		self.move = move_dict[int(self.move_type)]
 	
 	def call_mv(self, src_pathname, dst_pathname):
@@ -84,10 +86,21 @@ class file_batch_move:
 		2008-08-19
 			real copy, could cross device compared to os.link
 		"""
-		pipe_f = os.popen('cp "%s" "%s"'%(src_pathname, dst_pathname))
+		commandline='cp'
+		pipe_f = os.popen('%s "%s" "%s"'%(commandline, src_pathname, dst_pathname))
 		pipe_f_out = pipe_f.read()
 		if pipe_f_out:
-			sys.stderr.write("\tmv output: %s\n"%pipe_f_out)
+			sys.stderr.write("\t %s output: %s\n"%(commandline, pipe_f_out))
+	
+	def call_cp_p(self, src_pathname, dst_pathname):
+		"""
+		2011-9-14
+		"""
+		commandline='cp -p'
+		pipe_f = os.popen('%s "%s" "%s"'%(commandline, src_pathname, dst_pathname))
+		pipe_f_out = pipe_f.read()
+		if pipe_f_out:
+			sys.stderr.write("\t %s output: %s\n"%(commandline, pipe_f_out))
 	
 	def print_fname(self, src_pathname, dst_pathname):
 		"""
