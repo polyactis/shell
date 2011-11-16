@@ -9,7 +9,7 @@
 #$ -V
 source ~/.bash_profile
 
-noOfParallelThreads=40
+noOfParallelThreads=100
 
 if test $# -lt 4
 then
@@ -30,7 +30,7 @@ username=$1
 password=$2
 URL=$3
 targetSubDir=$4
-if [ -z $5 ]
+if [ -n $5 ]
 then
 	noOfParallelThreads=$5
 fi
