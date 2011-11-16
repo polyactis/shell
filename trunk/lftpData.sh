@@ -9,13 +9,16 @@
 #$ -V
 source ~/.bash_profile
 
+noOfParallelThreads=40
+
 if test $# -lt 4
 then
-        echo "Usage: lftpData.sh USERNAME PASSWORD URL TARGETDIR"
+        echo "Usage: lftpData.sh USERNAME PASSWORD URL TARGETDIR [noOfParallelThreads]"
         echo
         echo
-	echo "This script calls lftp to download data from specific URL using 40 threads simultaneously into target dir."
+	echo "This script calls lftp to download data from specific URL using $noOfParallelThreads threads simultaneously into target dir."
 	echo "The TARGETDIR will be made regardless of its existence."
+	echo "	noOfParallelThreads is optional. default is $noOfParallelThreads."
 	echo
         echo "Examples: "
 	echo "  lftpData.sh someone secret https://xfer.edu/gxfer2/ genomeData/"
@@ -27,8 +30,11 @@ username=$1
 password=$2
 URL=$3
 targetSubDir=$4
-noOfParallelThreads=40
-mkdir $targetSubDir
+if [ -z $5 ]
+then
+	noOfParallelThreads=$5
+fi
+mkdirhier $targetSubDir
 
 #lftp -d -c set http:authorization aixohreesoor:ciecaimojooz ; open  https://xfer.genome.wustl.edu/gxfer2/25373303920878; set cmd:parallel 6 ; mget * 
 echo "lftp -d -e set xfer:clobber false ; set http:authorization $username:$password ; open  $URL; set cmd:parallel 6 ; mirror -c --parallel=$noOfParallelThreads ./ $targetSubDir"
