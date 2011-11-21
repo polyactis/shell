@@ -1,0 +1,36 @@
+
+##  By default, every pool sends periodic updates to a central
+##  condor_collector at UW-Madison with basic information about the
+##  status of your pool.  This includes only the number of total
+##  machines, the number of jobs submitted, the number of machines
+##  running jobs, the hostname of your central manager, and the
+##  "COLLECTOR_NAME" specified above.  These updates help us see how
+##  Condor is being used around the world.  By default, they will be
+##  sent to condor.cs.wisc.edu.  If you don't want these updates sent
+##  from your pool, uncomment the following entry:
+CONDOR_DEVELOPERS_COLLECTOR = NONE
+
+##  Additional reporting (like that described above) can be sent via
+##  email.  By default, it is sent to "condor-admin@cs.wisc.edu".  If
+##  you wish to disable this reporting, uncomment this entry.
+CONDOR_DEVELOPERS = NONE
+
+HOSTALLOW_WRITE = *
+HOSTALLOW_READ = $(HOSTALLOW_WRITE)
+
+#SLOT_TYPE_1 = cpus=1,ram=26%
+#NUM_SLOTS_TYPE_1 = 3
+#SLOT_TYPE_2 = cpus=1
+#NUM_SLOTS_TYPE_2 = $(DETECTED_CORES) - 4
+
+#2011-11-16 dynamic slotting
+SLOT_TYPE_1 = cpus=100%
+SLOT_TYPE_1_PARTITIONABLE=TRUE
+NUM_SLOTS_TYPE_1 = 1
+NUM_SLOTS = 1
+
+START = True
+SUSPEND = False
+CONTINUE = True
+PREEMPT = False
+KILL = False
