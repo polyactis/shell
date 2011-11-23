@@ -29,27 +29,28 @@ cp $TOP_DIR/condor_config $TOP_DIR/condor_config.local $LOCAL_DIR/
 perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
 
-if [ "x$1" = "x" ]; then
+if [ "x$2" = "x" ]; then
     echo "No master host given - assuming I'm the new master!"
     CONDOR_HOST=`hostname -f`
     CONDOR_DAEMON_LIST="MASTER, COLLECTOR, NEGOTIATOR, STARTD, SCHEDD"
     echo "When registering workers, please specify $CONDOR_HOST as the central manager"
 else
-    echo "Starting worker for the master at $1"
-    CONDOR_HOST=$1
+    echo "Starting worker for the master at $2"
+    CONDOR_HOST=$2
     CONDOR_DAEMON_LIST="MASTER, STARTD"
 fi
 
 
-if [ "x$2" = "x" ]; then
+if [ "x$1" = "x" ]; then
     echo "No expirationInHours given. set it to 24."
     expirationInHours=24;
 else
-    echo "expirationInHours set to $2."
-    expirationInHours=$2
+    echo "expirationInHours set to $1."
+    expirationInHours=$1
 fi
 
-expirationInMins=`echo whatever|awk '{print $expirationInHours*24}'`;
+expirationInMins=`echo whatever|awk '{print '$expirationInHours'*60}'`;
+echo condor daemon will expire after $expirationInMins minutes.
 echo "CONDOR_HOST=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
 echo "DAEMON_LIST=$CONDOR_DAEMON_LIST" >>$LOCAL_DIR/condor_config.local
 
