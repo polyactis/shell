@@ -1,12 +1,46 @@
 #!/bin/bash
 
 set -e
+expirationInHours=$1
+noOfCPUs=$2
+condorHost=$3
 
-# condor to use
+if [ "x$condorHost" = "x" ]; then
+	echo "No master host given - assuming I'm the new master!"
+	CONDOR_HOST=`hostname -f`
+	CONDOR_DAEMON_LIST="MASTER, COLLECTOR, NEGOTIATOR, STARTD, SCHEDD"
+	echo "When registering workers, please specify $CONDOR_HOST as the central manager"
+else
+	echo "Starting worker for the master at $condorHost"
+	CONDOR_HOST=$condorHost
+	CONDOR_DAEMON_LIST="MASTER, STARTD"
+fi
+
+
+if [ "x$expirationInHours" = "x" ]; then
+	echo "No expirationInHours given. set it to 24."
+	expirationInHours=24;
+else
+	echo "expirationInHours set to $expirationInHours."
+	expirationInHours=$expirationInHours
+fi
+
+expirationInMins=`echo whatever|awk '{print '$expirationInHours'*60}'`;
+echo condor daemon will expire after $expirationInMins minutes.
+
+if [ "x$noOfCPUs" = "x" ]; then
+	echo "No noOfCPUs given. set it to \$(DETECTED_CORES)"
+	noOfCPUs="\$(DETECTED_CORES)";
+else
+	echo "noOfCPUs set to $noOfCPUs."
+fi
+
+# condor folder to use
 CONDOR=condor
 
 # this will contain logs/execute/spool
-LOCAL_DIR=/work/polyacti/condor
+currentUnixTime=`echo "import time; print time.time()"|python`
+LOCAL_DIR=/work/polyacti/condor.$currentUnixTime
 
 TOP_DIR=`dirname $0`
 TOP_DIR=`cd $TOP_DIR && pwd`
@@ -17,7 +51,7 @@ mkdir -p $LOCAL_DIR/spool
 
 # create an env file for easy sourcing
 cat >$LOCAL_DIR/env.sh <<EOF
-#/bin/bash
+#!/bin/bash
 export PATH=$TOP_DIR/$CONDOR/bin:$TOP_DIR/$CONDOR/sbin:$PATH
 export CONDOR_CONFIG=$LOCAL_DIR/condor_config
 EOF
@@ -29,28 +63,7 @@ cp $TOP_DIR/condor_config $TOP_DIR/condor_config.local $LOCAL_DIR/
 perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
 
-if [ "x$2" = "x" ]; then
-    echo "No master host given - assuming I'm the new master!"
-    CONDOR_HOST=`hostname -f`
-    CONDOR_DAEMON_LIST="MASTER, COLLECTOR, NEGOTIATOR, STARTD, SCHEDD"
-    echo "When registering workers, please specify $CONDOR_HOST as the central manager"
-else
-    echo "Starting worker for the master at $2"
-    CONDOR_HOST=$2
-    CONDOR_DAEMON_LIST="MASTER, STARTD"
-fi
-
-
-if [ "x$1" = "x" ]; then
-    echo "No expirationInHours given. set it to 24."
-    expirationInHours=24;
-else
-    echo "expirationInHours set to $1."
-    expirationInHours=$1
-fi
-
-expirationInMins=`echo whatever|awk '{print '$expirationInHours'*60}'`;
-echo condor daemon will expire after $expirationInMins minutes.
+echo "NUM_CPUS=$noOfCPUs" >>$LOCAL_DIR/condor_config.local
 echo "CONDOR_HOST=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
 echo "DAEMON_LIST=$CONDOR_DAEMON_LIST" >>$LOCAL_DIR/condor_config.local
 
