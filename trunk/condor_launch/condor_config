@@ -2579,4 +2579,7 @@ HDFS_DATANODE_DIR = /scratch/tmp/hadoop_data
 #HDFS_SITE_FILE = hdfs-site.xml
 
 DAGMAN_LOG_ON_NFS_IS_ERROR = False
+#increase responsiveness to ndoes completing or failing but also increases cpu time. default is 5.
+DAGMAN_USER_LOG_SCAN_INTERVAL = 3
+DAGMAN_MAX_SUBMITS_PER_INTERVAL = 50	#Default is 5
 
