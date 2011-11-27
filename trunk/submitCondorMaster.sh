@@ -24,13 +24,13 @@ cat >$jobscriptFileName <<EOF
 #!/bin/sh
 #$ -S /bin/bash
 #$ -cwd
-#$ -o ~/qjob_output/\$JOB_NAME.joblog.\$JOB_ID
+#$ -o ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
 #$ -j y
 #$ -l h_rt=$noOfHours:00:00,highp
 #$ -pe shared* $noOfCpusPerNode
 #$ -V
 source ~/.bash_profile
-$shellRepositoryPath/condor_launch/launch.sh $noOfHours $noOfCpusPerNode
+~/script/shell/condor_launch/condor_launch/launch.sh $noOfHours $noOfCpusPerNode
 EOF
 qsub $jobscriptFileName
 #rm $jobscriptFileName
