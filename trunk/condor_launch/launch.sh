@@ -40,7 +40,11 @@ CONDOR=condor
 
 # this will contain logs/execute/spool
 currentUnixTime=`echo "import time; print time.time()"|python`
-LOCAL_DIR=/work/polyacti/condor.$currentUnixTime
+# 2011-11-26 stop attaching currentUnixTime to LOCAL_DIR. because it makes exporting CONDOR_CONFIG on master node complicated.
+LOCAL_DIR=/work/polyacti/condor
+
+#clean up the condor conf folder
+rm -rf $LOCAL_DIR/*
 
 TOP_DIR=`dirname $0`
 TOP_DIR=`cd $TOP_DIR && pwd`
@@ -65,9 +69,11 @@ perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_c
 
 echo "NUM_CPUS=$noOfCPUs" >>$LOCAL_DIR/condor_config.local
 echo "CONDOR_HOST=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
+echo "FILESYSTEM_DOMAIN=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
 echo "DAEMON_LIST=$CONDOR_DAEMON_LIST" >>$LOCAL_DIR/condor_config.local
 
 condor_master -f -r $expirationInMins
 
 #-f: Causes the daemon to start up in the foreground. Instead of forking, the daemon runs in the foreground.
 #-r MINUTES: Causes the daemon to set a timer, upon expiration of which, it sends itself a SIGTERM for graceful shutdown.
+
