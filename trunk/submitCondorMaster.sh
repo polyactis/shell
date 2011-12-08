@@ -30,7 +30,7 @@ cat >$jobscriptFileName <<EOF
 #$ -pe shared* $noOfCpusPerNode
 #$ -V
 source ~/.bash_profile
-~/script/shell/condor_launch/condor_launch/launch.sh $noOfHours $noOfCpusPerNode
+~/script/shell/condor_launch/launch.sh $noOfHours $noOfCpusPerNode
 EOF
 qsub $jobscriptFileName
 #rm $jobscriptFileName
