@@ -17,6 +17,7 @@ echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
 echo "c. vervetNFS 10.47.163.171 through dl324b-1"
 echo "d. uclaOffice 10.8.0.10 through dl324b-1"
+echo "e. uclaOffice through temporary 10.47.163.167 "
 
 read a
 if [ $a = "1" ]; then
@@ -93,4 +94,8 @@ if [ $a = "c" ]; then
 fi
 if [ $a = "d" ]; then
 	ssh -p 22223 dl324b-1.cmb.usc.edu -l crocea -X
+fi
+
+if [ $a = "e" ]; then
+	ssh crocea@10.47.163.167 -p 1999
 fi
