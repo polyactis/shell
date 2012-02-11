@@ -11,6 +11,9 @@ if test $# -lt 1 ; then
 	exit 1
 fi
 noOfHours=$1
+noOfCondorHours=`echo whatever|awk '{print '$noOfHours'-1}'`
+echo "qsub job will live for $noOfHours hours."
+echo "condor will live for $noOfCondorHours.8 hours."
 noOfCpusPerNode=$2
 if [ -z $noOfCpusPerNode ]
 then
@@ -30,7 +33,8 @@ cat >$jobscriptFileName <<EOF
 #$ -pe shared* $noOfCpusPerNode
 #$ -V
 source ~/.bash_profile
-~/script/shell/condor_launch/launch.sh $noOfHours $noOfCpusPerNode
+#exit 0.2 hour earlier than the job exit
+~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode
 EOF
 qsub $jobscriptFileName
 #rm $jobscriptFileName
