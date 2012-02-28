@@ -56,7 +56,7 @@ then
 	cpuNoMultiplier=$cpuNoMultiplierDefault
 fi
 
-memoryRequired=$6
+memoryRequired=$5
 if [ -z $memoryRequired ]
 then
 	memoryRequired=$memoryRequiredDefault
