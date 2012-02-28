@@ -4,16 +4,18 @@ noOfCpusPerNodeDefault=8
 noOfCondorSlavesDefault=100
 noOfHoursToLiveDefault=24
 noOfSleepSecondsDefault=1800
+memoryRequiredDefault=10
 cpuNoMultiplierDefault=1
 if test $# -lt 1 ; then
-	echo "  $0 masterHost [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [cpuNoMultiplier]"
+	echo "  $0 masterHost [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [memoryRequired] [cpuNoMultiplier]"
 	echo ""
 	echo "Note:"
 	echo "	#. masterHost is the node where the master is."
 	echo "	#. noOfCpusPerNode is passed to SGE on how many cpus to occupy on each node. But condor takes all cpus on each node. Default is $noOfCpusPerNodeDefault."
 	echo "	#. noOfCondorSlaves is the max number of condor slaves running/in SGE queue. Default is $noOfCondorSlavesDefault. The script goes into sleep and checks periodically to see whether it needs to submit another slave job."
-	echo "	#. noOfHoursToLive is the number of hours for the slave to remain alive. Default is $noOfHoursToLiveDefault."
+	echo "	#. noOfHoursToLive is the number of hours for the slave to remain alive. Default is $noOfHoursToLiveDefault. If it's more than 24, argument highp will be added, which limits jobs to 2 queues, eeskin_idre.q and eeskin_pod.q."
 	echo "	#. noOfSleepSeconds is the number of seconds for this script to sleep before it submits another condor slave job. Default is $noOfSleepSecondsDefault."
+	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault."
 	echo "	#. cpuNoMultiplier is to let condor claim it has noOfCpusPerNode*cpuNoMultiplier cpus. Default is $cpuNoMultiplierDefault."
 	exit 1
 fi
@@ -43,7 +45,13 @@ then
 	noOfSleepSeconds=$noOfSleepSecondsDefault
 fi
 
-cpuNoMultiplier=$6
+memoryRequired=$6
+if [ -z $memoryRequired ]
+then
+	memoryRequired=$memoryRequiredDefault
+fi
+
+cpuNoMultiplier=$7
 if [ -z $cpuNoMultiplier ]
 then
 	cpuNoMultiplier=$cpuNoMultiplierDefault
@@ -74,6 +82,7 @@ do
 #$ -cwd
 #$ -o  ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
 #$ -j y
+#$ -l h_data=$memoryRequired\G
 #$ -l h_rt=$noOfHoursToLive:00:00
 #$ -pe shared* $noOfCpusPerNode
 #$ -V

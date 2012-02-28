@@ -2,14 +2,16 @@
 
 expirationInHoursDefault=24
 cpuNoMultiplierDefault=1
+memoryRequiredDefault=10
 if test $# -lt 1 ; then
-	echo "  $0 [expirationInHours] [noOfCPUs] [condorHost] [cpuNoMultiplier]"
+	echo "  $0 [expirationInHours] [noOfCPUs] [condorHost] [cpuNoMultiplier] [memoryRequired]"
 	echo ""
 	echo "Note:"
 	echo "	#. expirationInHours is the number of hours for the slave to remain alive. Default is $expirationInHoursDefault."
 	echo "	#. noOfCPUs is passed to SGE on how many cpus to occupy on each node. But condor takes all cpus on each node. Default is what condor detects."
 	echo "  #. condorHost is the machine where collector,negotiator, etc. are running. Omit means the machine itself is the host"
 	echo "	#. cpuNoMultiplier is to let condor claim it has noOfCPUs*cpuNoMultiplier cpus. Default is $cpuNoMultiplierDefault."
+	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault."
 	exit 1
 fi
 set -e
@@ -53,6 +55,13 @@ if [ -z $cpuNoMultiplier ]
 then
 	cpuNoMultiplier=$cpuNoMultiplierDefault
 fi
+
+memoryRequired=$6
+if [ -z $memoryRequired ]
+then
+	memoryRequired=$memoryRequiredDefault
+fi
+
 echo "condor will claim $cpuNoMultiplier\X as many cpus available."
 # condor folder to use
 CONDOR=condor
@@ -90,6 +99,9 @@ cp $TOP_DIR/condor_config $TOP_DIR/condor_config.local $LOCAL_DIR/
 perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
 
+memoryRequiredInMB=`echo $memoryRequired*1024|bc`
+#2012.2.27 setup proper memory
+echo "SLOT_TYPE_1 = cpus=100%, memory=$memoryRequiredInMB " >>$LOCAL_DIR/condor_config.local
 #2011.12.13 cheating, fake 3 times of cpus requested
 echo "NUM_CPUS=$noOfCPUs*$cpuNoMultiplier" >>$LOCAL_DIR/condor_config.local
 #echo "NUM_CPUS=$noOfCPUs" >>$LOCAL_DIR/condor_config.local
