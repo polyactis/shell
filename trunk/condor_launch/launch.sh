@@ -4,21 +4,22 @@ expirationInHoursDefault=24
 cpuNoMultiplierDefault=1
 memoryRequiredDefault=10
 if test $# -lt 1 ; then
-	echo "  $0 [expirationInHours] [noOfCPUs] [condorHost] [cpuNoMultiplier] [memoryRequired]"
+	echo "  $0 [expirationInHours] [noOfCPUs] [memoryRequired] [cpuNoMultiplier] [condorHost]"
 	echo ""
 	echo "Note:"
 	echo "	#. expirationInHours is the number of hours for the slave to remain alive. Default is $expirationInHoursDefault."
 	echo "	#. noOfCPUs is passed to SGE on how many cpus to occupy on each node. But condor takes all cpus on each node. Default is what condor detects."
 	echo "  #. condorHost is the machine where collector,negotiator, etc. are running. Omit means the machine itself is the host"
 	echo "	#. cpuNoMultiplier is to let condor claim it has noOfCPUs*cpuNoMultiplier cpus. Default is $cpuNoMultiplierDefault."
-	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault."
+	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault. Final memory that condor will broadcast is memoryRequired*noOfCPUs."
 	exit 1
 fi
 set -e
 expirationInHours=$1
 noOfCPUs=$2
-condorHost=$3
+memoryRequired=$3
 cpuNoMultiplier=$4
+condorHost=$5
 thisIsSlave=0
 if [ "x$condorHost" = "x" ]; then
 	echo "No master host given - assuming I'm the new master!"
@@ -56,7 +57,6 @@ then
 	cpuNoMultiplier=$cpuNoMultiplierDefault
 fi
 
-memoryRequired=$5
 if [ -z $memoryRequired ]
 then
 	memoryRequired=$memoryRequiredDefault
@@ -99,7 +99,7 @@ cp $TOP_DIR/condor_config $TOP_DIR/condor_config.local $LOCAL_DIR/
 perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
 
-memoryRequiredInMB=`echo $memoryRequired*1024|bc`
+memoryRequiredInMB=`echo $memoryRequired*$noOfCPUs*1024|bc`
 #2012.2.27 setup proper memory
 echo "SLOT_TYPE_1 = cpus=100%, memory=$memoryRequiredInMB " >>$LOCAL_DIR/condor_config.local
 #2011.12.13 cheating, fake 3 times of cpus requested
@@ -108,6 +108,12 @@ echo "NUM_CPUS=$noOfCPUs*$cpuNoMultiplier" >>$LOCAL_DIR/condor_config.local
 echo "CONDOR_HOST=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
 echo "FILESYSTEM_DOMAIN=$CONDOR_HOST" >>$LOCAL_DIR/condor_config.local
 echo "DAEMON_LIST=$CONDOR_DAEMON_LIST" >>$LOCAL_DIR/condor_config.local
+
+# 2012.3.6 kill jobs immediately after preempt (when it's near the daemon exit time)
+echo "PREEMPT = (CurrentTime - JobStart) > ($expirationInHours*\$(HOUR)-5*\$(MINUTE))" >>$LOCAL_DIR/condor_config.local
+echo "WANT_VACATE = FALSE" >>$LOCAL_DIR/condor_config.local
+#echo "KILL = TRUE # No longer matters" >>$LOCAL_DIR/condor_config.local
+#echo "KILL = (\$(CurrentTime) - \$(DaemonStartTime)) > $expirationInHours*\$(HOUR)" >>$LOCAL_DIR/condor_config.local
 if test "$thisIsSlave" = "1"
 then
 	#differentiate between different STARTD processes on the same machine

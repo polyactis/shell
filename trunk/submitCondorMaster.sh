@@ -1,7 +1,7 @@
 #!/bin/sh
 
 noOfCpusPerNodeDefault=8
-memoryRequiredDefault=10
+memoryRequiredDefault=8
 
 if test $# -lt 1 ; then
 	echo "  $0 noOfHours [noOfCpusPerNode] [memoryRequired]"
@@ -28,6 +28,7 @@ if [ -z $memoryRequired ]
 then
 	memoryRequired=$memoryRequiredDefault
 fi
+memoryRequiredInString=$memoryRequired\G
 
 shellRepositoryPath=`dirname $0`
 currentUnixTime=`echo "import time; print time.time()"|python`
@@ -39,13 +40,15 @@ cat >$jobscriptFileName <<EOF
 #$ -cwd
 #$ -o ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
 #$ -j y
-#$ -l h_data=$memoryRequired\G
+#$ -l h_data=$memoryRequiredInString
 #$ -l h_rt=$noOfHours:00:00,highp
 #$ -pe shared* $noOfCpusPerNode
 #$ -V
 source ~/.bash_profile
 #exit 0.2 hour earlier than the job exit
-$shellRepositoryPath/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode
+#2012.2.28 tunnel for the vervetdb
+~/script/shell/sshTunnelForDB.sh
+$shellRepositoryPath/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired
 EOF
 qsub $jobscriptFileName
 #rm $jobscriptFileName

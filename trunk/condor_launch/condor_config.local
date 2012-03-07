@@ -32,5 +32,7 @@ NUM_SLOTS = 1
 START = True
 SUSPEND = False
 CONTINUE = True
-PREEMPT = False
-KILL = False
+#PREEMPT = False
+#KILL = False
+#2012.3.5 kill all jobs before condor exits (SGE environment, don't leave jobs behind)
+#KILL = $(My.TimeToLive) <= 5*$(MINUTE)	#My.TimeToLive,Target.TimeToLive, or TimeToLive is undefined.

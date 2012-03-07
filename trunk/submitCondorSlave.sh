@@ -4,7 +4,7 @@ noOfCpusPerNodeDefault=8
 noOfCondorSlavesDefault=100
 noOfHoursToLiveDefault=24
 noOfSleepSecondsDefault=1800
-memoryRequiredDefault=10
+memoryRequiredDefault=8
 cpuNoMultiplierDefault=1
 if test $# -lt 1 ; then
 	echo "  $0 masterHost [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [memoryRequired] [cpuNoMultiplier]"
@@ -50,6 +50,7 @@ if [ -z $memoryRequired ]
 then
 	memoryRequired=$memoryRequiredDefault
 fi
+memoryRequiredInString=$memoryRequired\G
 
 cpuNoMultiplier=$7
 if [ -z $cpuNoMultiplier ]
@@ -82,11 +83,17 @@ do
 #$ -cwd
 #$ -o  ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
 #$ -j y
-#$ -l h_data=$memoryRequired\G
+#$ -l h_data=$memoryRequiredInString
 #$ -l h_rt=$noOfHoursToLive:00:00
-#$ -pe shared* $noOfCpusPerNode
 #$ -V
 EOF
+		if test $noOfCpusPerNode -gt 1
+		then
+			#2012.2.28 add "-pe shared* ..." if more than one cpu is needed on one node.
+			cat >>$jobscriptFileName <<EOF
+#$ -pe shared* $noOfCpusPerNode
+EOF
+		fi
 		if test $noOfHoursToLive -gt 24
 		then
 			#2011.12.14 add highp if this would last >24 hours
@@ -97,7 +104,9 @@ EOF
 		cat >>$jobscriptFileName <<EOF
 source ~/.bash_profile
 #exit 0.2 hour earlier than the job exit
-~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $masterHost $cpuNoMultiplier
+#2012.2.28 tunnel for the vervetdb
+~/script/shell/sshTunnelForDB.sh
+~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $masterHost
 EOF
 		qsub $jobscriptFileName
 		#rm $jobscriptFileName
