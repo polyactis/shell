@@ -32,7 +32,18 @@ NUM_SLOTS = 1
 START = True
 SUSPEND = False
 CONTINUE = True
-#PREEMPT = False
-#KILL = False
+PREEMPT = False
+KILL = False
 #2012.3.5 kill all jobs before condor exits (SGE environment, don't leave jobs behind)
 #KILL = $(My.TimeToLive) <= 5*$(MINUTE)	#My.TimeToLive,Target.TimeToLive, or TimeToLive is undefined.
+
+#2012.4.10 SYSTEM_PERIODIC_HOLD is machine's counterpart of a job's classad "periodic_hold"/"PeriodicHold". similar for SYSTEM_PERIODIC_REMOVE. another similar classad is periodic_release.
+# JobStatus 1 is "IDLE". NumJobStarts is how many times the job has been started. Following policy will put an IDLE job that has been started >1 times on hold/remove. The latter situation happens when the slave node's condor_master expires (which evicts/preempts jobs running on it) or the machine goes down.
+
+#shorten the interval from default (=5 minutes) to 30 seconds
+PERIODIC_EXPR_INTERVAL = 45
+
+#SYSTEM_PERIODIC_HOLD = (NumJobStarts >= 1 && JobStatus == 1)
+SYSTEM_PERIODIC_REMOVE = (NumJobStarts >= 1 && JobStatus == 1)
+# set a custom hold subcode
+#SYSTEM_PERIODIC_HOLD_SUBCODE = 17
