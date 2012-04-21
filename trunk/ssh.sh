@@ -12,7 +12,7 @@ echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
 echo "11. aludra.usc.edu"
 echo "12. banyan through dl324b-1"
-echo "13. autism server 10.47.165.148"
+echo "13. autism server 149.142.126.176"
 echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
 echo "c. vervetNFS 10.47.163.171 through dl324b-1"
@@ -78,7 +78,8 @@ if [ $a = "12" ]; then
 fi
 
 if [ $a = "13" ]; then
-	ssh yh@10.47.165.148 -X
+	ssh yh@149.142.126.176 -X	#2012.4.3 new IP
+	#ssh yh@10.47.165.148 -X
 fi
 
 if [ $a = "a" ]; then
