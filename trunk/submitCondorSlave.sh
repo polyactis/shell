@@ -99,7 +99,7 @@ do
 		echo "condor will claim $memoryRequired X$memoryMultiplier Gb memory."
 		echo "sshDBTunnel=$sshDBTunnel."
 		currentUnixTime=`echo "import time; print time.time()"|python`
-		jobscriptFileName=/tmp/condorS.$currentUnixTime.sh
+		jobscriptFileName=/tmp/condor.$currentUnixTime.sh
 		echo job script: $jobscriptFileName
 		cat >$jobscriptFileName <<EOF
 #!/bin/sh
