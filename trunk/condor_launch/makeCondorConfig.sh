@@ -97,6 +97,10 @@ CONDOR=condor
 currentUnixTime=`echo "import time; print time.time()"|python`
 
 localCondorConfigFile=/tmp/condor$currentUnixTime.condor_config.local
+#2012.5.8 delete it first if it exists
+if test -r $localCondorConfigFile; then
+	rm $localCondorConfigFile >& /dev/null
+fi
 # provide a backbone local config file
 TOP_DIR=`dirname $0`
 TOP_DIR=`cd $TOP_DIR && pwd`
@@ -108,6 +112,7 @@ echo "SLOT_TYPE_1 = cpus=100%, memory=$memoryRequiredAfterMultiplying " >>$local
 echo "NUM_CPUS=$noOfCPUsAfterMultiplying" >>$localCondorConfigFile
 echo "CONDOR_HOST=$CONDOR_HOST" >>$localCondorConfigFile
 echo "FILESYSTEM_DOMAIN=$CONDOR_HOST" >>$localCondorConfigFile
+echo "#FILESYSTEM_DOMAIN=\$(FULL_HOSTNAME)" >>$localCondorConfigFile
 echo "DAEMON_LIST=$CONDOR_DAEMON_LIST" >>$localCondorConfigFile
 #2012.4.16 add sshDBTunnel classAd for this machine
 echo "sshDBTunnel=$sshDBTunnel" >>$localCondorConfigFile
@@ -126,3 +131,6 @@ fi
 #echo "ALL_DEBUG = D_ALL" >> $localCondorConfigFile
 #echo "STARTD_DEBUG=D_FULLDEBUG" >> $localCondorConfigFile
 cat $localCondorConfigFile
+if test -r $localCondorConfigFile; then
+	rm $localCondorConfigFile >& /dev/null
+fi
