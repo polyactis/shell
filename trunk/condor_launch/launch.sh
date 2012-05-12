@@ -135,4 +135,6 @@ condor_master -f -r $expirationInMins
 
 #-f: Causes the daemon to start up in the foreground. Instead of forking, the daemon runs in the foreground.
 #-r MINUTES: Causes the daemon to set a timer, upon expiration of which, it sends itself a SIGTERM for graceful shutdown.
+# 2012.4.17 delete everything in the local config folder
+rm $LOCAL_DIR -rf
 
