@@ -38,7 +38,7 @@ countCondorSJobs () {
 	echo `qstat -u polyacti|grep condor|wc -l|awk -F ' ' '{print $1}'`
 }
 findOneCondorJobNode() {
-	echo `qstat -u $clusterUsername|grep condor|head -n 1|awk -F ' ' '{print $8}'|awk -F '@' '{print $2}'`
+	echo `qstat -u $clusterUsername|grep condor|head -n 2|tail -n 1|awk -F ' ' '{print $8}'|awk -F '@' '{print $2}'`
 }
 shellRepositoryPath=`dirname $0`
 noOfCondorJobs=`countCondorSJobs`
@@ -50,9 +50,13 @@ do
 	echo jobNode is $jobNode.
 	if test "$jobNode" != "$masterHost"
 	then
-		ssh $clusterUsername@$jobNode "~/script/shell/kill_jobs.sh condor"
+		ssh $clusterUsername@$jobNode "~/script/shell/kill_jobs.sh condor 15 1"
+		echo "condor on $jobNode is killed"
 		#for i in `ps -ef OT|grep polyacti|grep condor|awk -F ' ' '{print $2}'`; do echo $i ; done
+	else
+		echo "$jobNode is the master node. No kill"
 	fi
+
 	echo "sleep now for $noOfSleepSeconds seconds"
 	sleep $noOfSleepSeconds
 	noOfCondorJobs=`countCondorSJobs`
