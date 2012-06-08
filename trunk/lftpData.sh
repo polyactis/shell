@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
 #$ -o $JOB_NAME.joblog.$JOB_ID
@@ -9,7 +9,7 @@
 #$ -V
 source ~/.bash_profile
 
-noOfParallelThreads=100
+noOfParallelThreadsDefault=100
 
 if test $# -lt 4
 then
@@ -18,7 +18,7 @@ then
         echo
 	echo "This script calls lftp to download data from specific URL using $noOfParallelThreads threads simultaneously into target dir."
 	echo "The TARGETDIR will be made regardless of its existence."
-	echo "	noOfParallelThreads is optional. default is $noOfParallelThreads."
+	echo "	noOfParallelThreads is optional. default is $noOfParallelThreadsDefault."
 	echo
         echo "Examples: "
 	echo "  lftpData.sh someone secret https://xfer.edu/gxfer2/ genomeData/"
@@ -30,10 +30,12 @@ username=$1
 password=$2
 URL=$3
 targetSubDir=$4
-if [ -n $5 ]
+noOfParallelThreads=$5
+if test -z "$noOfParallelThreads"
 then
-	noOfParallelThreads=$5
+	noOfParallelThreads=$noOfParallelThreadsDefault
 fi
+echo $noOfParallelThreads threads.
 mkdirhier $targetSubDir
 
 #lftp -d -c set http:authorization aixohreesoor:ciecaimojooz ; open  https://xfer.genome.wustl.edu/gxfer2/25373303920878; set cmd:parallel 6 ; mget * 
