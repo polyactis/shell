@@ -23,9 +23,13 @@ if test $# -lt 1 ; then
 	exit 1
 fi
 masterHost=$1
+thisIsSlave=1
 #2012.4.16 set masterHost to nothing if it is "=". This will cause launch.sh to read from ~/condor_central_manager.txt to get the central manager or become central manager itself if the latter file is empty.
 if test "$masterHost" = "="; then
-	masterHost="";
+	masterHost=""
+fi
+if test "$masterHost" = "-"; then
+	thisIsSlave=0
 fi
 
 noOfCpusPerNode=$2
@@ -77,7 +81,7 @@ then
 fi
 
 countCondorSJobs () {
-	echo `qstat -u polyacti|grep condorS|wc -l|awk -F ' ' '{print $1}'`
+	echo `qstat -u polyacti|grep condor|wc -l|awk -F ' ' '{print $1}'`
 }
 shellRepositoryPath=`dirname $0`
 noOfCondorJobs=`countCondorSJobs`
@@ -85,6 +89,12 @@ echo "qsub job will live for $noOfHoursToLive hours."
 echo "condor will live for $noOfCondorHours.8 hours."
 echo "condor will claim $memoryRequired X $memoryMultiplier\Gb memory."
 echo $noOfCondorJobs condor jobs now, to reach $noOfCondorSlaves.
+
+if test "$thisIsSlave" = "0"; then
+	scriptFnamePrefix=/tmp/condorM
+else
+	scriptFnamePrefix=/tmp/condorS
+fi
 
 while test 1 -le 2
 do
@@ -99,7 +109,7 @@ do
 		echo "condor will claim $memoryRequired X$memoryMultiplier Gb memory."
 		echo "sshDBTunnel=$sshDBTunnel."
 		currentUnixTime=`echo "import time; print time.time()"|python`
-		jobscriptFileName=/tmp/condor.$currentUnixTime.sh
+		jobscriptFileName=$scriptFnamePrefix.$currentUnixTime.sh
 		echo job script: $jobscriptFileName
 		cat >$jobscriptFileName <<EOF
 #!/bin/sh
