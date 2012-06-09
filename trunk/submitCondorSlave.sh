@@ -140,9 +140,15 @@ source ~/.bash_profile
 #exit 0.2 hour earlier than the job exit
 #2012.2.28 tunnel for the vervetdb. #2012.4.16 only when sshDBTunnel=1. pass the variable into the sge script first.
 sshDBTunnel=$sshDBTunnel
+#2012.6.8 a script to check whether ssh tunnel has already been in place on this node. If yes, don't run ssh tunnel.
 if test "\$sshDBTunnel" = "1"; then
-	ssh -N -L 5432:dl324b-1.cmb.usc.edu:5432 polyacti@login3 & 
-	tunnelProcessID=\$!
+	noOfGrepLines=\`ps -ef OT|grep dl324b-1.cmb.usc.edu:5432|wc -l\`
+	if test "\$noOfGrepLines" = "1"; then	#not there. grep process will show up in ps -ef OT.
+		ssh -N -L 5432:dl324b-1.cmb.usc.edu:5432 polyacti@login3 & 
+		tunnelProcessID=\$!
+	else
+		tunnelProcessID=0
+	fi
 else
 	tunnelProcessID=0
 fi
