@@ -1,16 +1,37 @@
 #!/bin/sh
 date
+backupHostnameDefault=hpc-cmb.usc.edu
+if test $# -lt 1 ; then
+	echo "  $0 dbname [backupHostname] [dbuser]"
+	echo ""
+	echo "Note:"
+	echo "	dbname is the database to be backed-up."
+	echo "	backupHostname is the hostname of the machine where backup is to be sent through scp. Default is $backupHostnameDefault."
+	echo "Examples:"
+	echo "	$0 vervetdb hpc-cmb.usc.edu yh"
+	echo "	$0 vervetdb"
+	exit 1
+fi
+
 echo -n 'Starting to dump the '
 echo -n $1
 echo -n ' ...'
+dbname=$1
 if test -n "$2"
 then
 	host_name=$2
 else
-	host_name=hpc-cmb.usc.edu
+	host_name=$backupHostnameDefault
 fi
-pg_dump $1 |gzip >/usr/local/src/zip/$1.gz
-scp /usr/local/src/zip/$1.gz yuhuang@$host_name:./backup/
-rm /usr/local/src/zip/$1.gz
+dbuser=$3
+if test -n "$dbuser"
+then
+	dbuserArgument="-U $dbuser"
+else
+	dbuserArgument=""
+fi
+pg_dump $dbuserArgument $dbname |gzip >/usr/local/src/zip/$dbname.gz
+scp /usr/local/src/zip/$dbname.gz yuhuang@$host_name:./backup/
+rm /usr/local/src/zip/$dbname.gz
 echo -n 'done'
 date
