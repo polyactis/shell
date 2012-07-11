@@ -32,7 +32,7 @@ mkdirhier $targetSubDir
 
 for i in `cat $FILEWithToBeDownloadedFilenames`;
 	do echo $i;
-	wget --user=cheerieyiemi --password=hiecaifoovio --recursive --no-parent --continue --reject='index.html*' $URL/$i --background -nd -P $targetSubDir -nH --cut-dirs=1;
+	wget --user=$username --password=$password --recursive --no-parent --continue --reject='index.html*' $URL/$i --background -nd -P $targetSubDir -nH --cut-dirs=1;
 done
 
 # However, unlike -nd, --cut-dirs does not lose with subdirectories---for instance, with
