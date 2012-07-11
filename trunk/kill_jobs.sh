@@ -19,7 +19,7 @@ else
 fi
 forceKill=$3
 echo "Processed to be killed are:"
-ps -ef |grep $pattern| awk '{print}'
+ps -ef |grep "$pattern"| awk '{print}'
 
 if [ -z $forceKill ]
 then
@@ -35,7 +35,7 @@ else
 fi
 echo $yes_or_no
 if test $yes_or_no = "Y" -o $yes_or_no = "y" -o $yes_or_no = "Yes" -o $yes_or_no = "yes" -o $yes_or_no = "YES" ; then
-	for i in `ps -ef OT |grep $pattern|awk '{print $2}'`; do
+	for i in `ps -ef OT |grep "$pattern"|awk '{print $2}'`; do
 		echo $i
 		kill -$kill_signal $i;
 	done
