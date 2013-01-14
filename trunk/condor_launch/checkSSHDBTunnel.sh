@@ -1,6 +1,9 @@
 #!/bin/bash
-
-noOfGrepLines=`ps -ef OT|grep dl324b-1.cmb.usc.edu:5432|wc -l`
+targetHost=crocea.mednet.ucla.edu
+targetPort=5432
+noOfGrepLines=`ps -ef OT|grep $targetHost:$targetPort|wc -l`
+ulimit -n 50000
+ulimit -u 50000
 if test "$noOfGrepLines" = "2"; then	#sshTunnel is there. grep process will show up in ps -ef OT.
 	echo "sshDBTunnel=1"
 else

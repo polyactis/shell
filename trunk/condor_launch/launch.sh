@@ -1,12 +1,19 @@
 #!/bin/bash
 
+#2012.7.31 increase the max number of processes per user for this shell so that it could spawn lots of condor_shadow
+source ~/.bash_profile
+#ulimit -u 50000
+#ulimit -n 50000
+
 expirationInHoursDefault=24
 cpuNoMultiplierDefault=1
 memoryRequiredDefault=10
 memoryMultiplierDefault=1
 sshDBTunnelDefault=0
+GLIDEIN_MAX_IDLE_HOURS_DEFAULT=3
+
 if test $# -lt 1 ; then
-	echo "  $0 [expirationInHours] [noOfCPUs] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel] [condorHost]"
+	echo "  $0 [expirationInHours] [noOfCPUs] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel] [GLIDEIN_MAX_IDLE_HOURS] [condorHost] "
 	echo ""
 	echo "Note:"
 	echo "	#. expirationInHours is the number of hours for the slave to remain alive. Default is $expirationInHoursDefault."
@@ -19,17 +26,61 @@ if test $# -lt 1 ; then
 	exit 1
 fi
 set -e
+
+
 expirationInHours=$1
+if [ "x$expirationInHours" = "x" ]; then
+	echo "No expirationInHours given. set it to $expirationInHoursDefault."
+	expirationInHours=$expirationInHoursDefault;
+else
+	echo "expirationInHours set to $expirationInHours."
+fi
+
+expirationInMins=`echo whatever|awk '{print '$expirationInHours'*60}'`;
+echo condor daemon will expire after $expirationInMins minutes.
+
 noOfCPUs=$2
+if [ "x$noOfCPUs" = "x" ]; then
+	echo "No noOfCPUs given. set it to \$(DETECTED_CORES)"
+	noOfCPUs="\$(DETECTED_CORES)";
+else
+	echo "noOfCPUs set to $noOfCPUs."
+fi
+
 memoryRequired=$3
+if [ -z $memoryRequired ]
+then
+	memoryRequired=$memoryRequiredDefault
+fi
+
 cpuNoMultiplier=$4
+if [ -z $cpuNoMultiplier ]
+then
+	cpuNoMultiplier=$cpuNoMultiplierDefault
+fi
+
+
 memoryMultiplier=$5
+if [ -z $memoryMultiplier ]
+then
+	memoryMultiplier=$memoryMultiplierDefault
+fi
+
 sshDBTunnel=$6
-condorHost=$7
+if [ -z $sshDBTunnel ]
+then
+	sshDBTunnel=$sshDBTunnelDefault
+fi
+
+GLIDEIN_MAX_IDLE_HOURS=$7
+if [ -z $GLIDEIN_MAX_IDLE_HOURS ]
+then
+	GLIDEIN_MAX_IDLE_HOURS=$GLIDEIN_MAX_IDLE_HOURS_DEFAULT
+fi
+
+condorHost=$8	#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
 centralManagerFilename=~/condor_central_manager.txt
-
 thisIsSlave=0
-
 machineName=`hostname -f`
 echo "Running on $machineName ..."
 
@@ -47,43 +98,6 @@ elif [ "x$condorHost" = "x" ]; then
 	fi
 else
 	thisIsSlave=1
-fi
-
-if [ "x$expirationInHours" = "x" ]; then
-	echo "No expirationInHours given. set it to $expirationInHoursDefault."
-	expirationInHours=$expirationInHoursDefault;
-else
-	echo "expirationInHours set to $expirationInHours."
-fi
-
-expirationInMins=`echo whatever|awk '{print '$expirationInHours'*60}'`;
-echo condor daemon will expire after $expirationInMins minutes.
-
-if [ "x$noOfCPUs" = "x" ]; then
-	echo "No noOfCPUs given. set it to \$(DETECTED_CORES)"
-	noOfCPUs="\$(DETECTED_CORES)";
-else
-	echo "noOfCPUs set to $noOfCPUs."
-fi
-
-if [ -z $cpuNoMultiplier ]
-then
-	cpuNoMultiplier=$cpuNoMultiplierDefault
-fi
-
-if [ -z $memoryRequired ]
-then
-	memoryRequired=$memoryRequiredDefault
-fi
-
-if [ -z $memoryMultiplier ]
-then
-	memoryMultiplier=$memoryMultiplierDefault
-fi
-
-if [ -z $sshDBTunnel ]
-then
-	sshDBTunnel=$sshDBTunnelDefault
 fi
 
 echo "condor will claim $cpuNoMultiplier\X as many cpus available."
@@ -126,10 +140,16 @@ EOF
 . $LOCAL_DIR/env.sh
 
 # fix the condor config file
-cp $TOP_DIR/condor_config $LOCAL_DIR/
+cp $TOP_DIR/condor_config  $LOCAL_DIR/
 perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
-perl -p -i -e "s:^LOCAL_CONFIG_FILE( |\t).*:LOCAL_CONFIG_FILE = $TOP_DIR/makeCondorConfig.sh $noOfCPUs $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $condorHost|:" $LOCAL_DIR/condor_config
+if test "$thisIsSlave" = "0"; then	#central manager won't have their local config file generated via script (otherwise, script will be run almost every mili-second)
+	$TOP_DIR/makeCondorConfig.sh $noOfCPUs $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost  >$LOCAL_DIR/condor_config.local
+	#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
+else
+	perl -p -i -e "s:^LOCAL_CONFIG_FILE( |\t).*:LOCAL_CONFIG_FILE = $TOP_DIR/makeCondorConfig.sh $noOfCPUs $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost|:" $LOCAL_DIR/condor_config
+	#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
+fi
 
 condor_master -f -r $expirationInMins
 
