@@ -3,3 +3,4 @@
 #sshfs -o reconnect yuhuang@hpc-cmb:./ ~/mnt/hpc-cmb/
 
 sshfs -o workaround=rename  -p 1999 crocea@uclaOffice:/ ~/mnt/crocea.mednet/
+sshfs -o workaround=rename  -p 1999 crocea@uclaOffice:./ ~/mnt/crocea.mednet_home/
