@@ -22,7 +22,10 @@ if bit_number>40:       #64bit
 	sys.path.insert(0, os.path.expanduser('~/lib64/python'))
 else:   #32bit
 	sys.path.insert(0, os.path.expanduser('~/lib/python'))
+sys.path.insert(0, os.path.join(os.path.expanduser('~/script')))
+
 import sys, os, re, getopt, csv
+from pymodule import openGzipFile
 
 class count_columns:
 	def __init__(self, file_list, delimiter, no_of_lines):
@@ -46,7 +49,7 @@ class count_columns:
 		for f in self.files:
 			sys.stdout.write("%d/%d:\t%s"%(self.files.index(f)+1,len(self.files),f))
 			src_pathname = f
-			reader = csv.reader(file(src_pathname), delimiter=self.delimiter)
+			reader = csv.reader(openGzipFile(src_pathname), delimiter=self.delimiter)
 			try:
 				for i in range(self.no_of_lines):
 					row = reader.next()
