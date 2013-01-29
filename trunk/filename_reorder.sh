@@ -1,9 +1,10 @@
 #!/bin/bash
 
+pageStartingNumberDefault=0
 pageNumberIncreasingStepDefault=2
 newFileSuffixDefault=.jpg
-if test $# -lt 4 ; then
-	echo "  $0 inputFolder currentFilePrefix newFilePrefix pageStartingNumber [pageNumberIncreasingStep] [newFileSuffix]"
+if test $# -lt 3 ; then
+	echo "  $0 inputFolder currentFilePrefix newFilePrefix [pageStartingNumber] [pageNumberIncreasingStep] [newFileSuffix]"
 	echo ""
 	echo "Warning:"
 	echo "	1. Before starting to rename the files, you should keep in mind the new filenames set should not overlap with the old filenames set. Otherwise, file loss may happen."
@@ -12,10 +13,13 @@ if test $# -lt 4 ; then
 	echo "	1. pageNumberIncreasingStep is $pageNumberIncreasingStepDefault by default."
 	echo "	2. newFileSuffix is $newFileSuffixDefault by default."
 	echo "	3. new filenames look like newFilePrefix_pageNumber newFileSuffix"
+	echo "	4. pageStartingNumber is $pageStartingNumberDefault by default."
 	echo
 	echo "Examples:"
-	echo "	Change all files in ~ with uni prefix to prefix=un and starting page number is 0. New filename is like un_0000.jpg"
+	echo "	#Change all files in ~ with uni prefix to prefix=un and starting page number is 0. New filename is like un_0000.jpg"
 	echo "	$0 ~ uni un 0"
+	echo "	#Change all files within Seber2003 folder, prefixed with toc to prefix=atoc."
+	echo "	$0 ./Seber2003/ toc atoc"
 	exit 1
 fi
 
@@ -23,6 +27,11 @@ inputFolder=$1
 currentFilePrefix=$2
 newFilePrefix=$3
 pageStartingNumber=$4
+if [ -z $pageStartingNumber ]
+then
+	pageStartingNumber=$pageStartingNumberDefault
+fi
+
 pageNumberIncreasingStep=$5
 if [ -z $pageNumberIncreasingStep ]
 then
@@ -77,7 +86,7 @@ then
 				then
 					pageNumber=0$pageNumber
 				fi
-				mv -i $i $newFilePrefix\_$pageNumber$newFileSuffix
+				mv -i $i $inputFolder/$newFilePrefix\_$pageNumber$newFileSuffix
 				pageNumber=`expr $pageNumber \+ $pageNumberIncreasingStep`
 				count=`expr $count \+ 1`
 			fi
