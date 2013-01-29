@@ -1,11 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "Warning: Before starting to rename the files,"
 echo "Warning: you should keep in mind the new filenames set"
 echo "Warning: should not overlap with the old filenames set."
 echo "Warning: Otherwise, file loss may happen."
 echo "Warning: The number of files within the folder <= 9999."
-echo -n "Please enter the prefix for all these files: "
+echo "Warning: The new file suffix is .jpg. Will offer option in future."
+echo -n "Please enter the current prefix for all these files: "
+read oldPrefix
+echo -n "Please enter the new prefix for all these files: "
 read prefix
 echo -n "Enter the base number: "
 read base
@@ -24,7 +27,7 @@ read answer
 if [ $answer = 'y' ]
 then
 
-	for i in $(ls)
+	for i in `ls $oldPrefix*`
 	do
 		if test -w $i
 		then
@@ -47,6 +50,8 @@ then
 		fi
 	done
 
+else
+	echo "you answered no"
 fi
 
 echo `expr $count \- $base` "filenames reordered"
