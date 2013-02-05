@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Which host:"
-echo "1. dl324b-1"
+echo "1. ICNNBackup, 128.97.66.165"
 echo "2. vervetNFS 10.47.163.171"
 echo "3. hoffman2"
 echo "4. banyan"
@@ -21,7 +21,7 @@ echo "e. uclaOffice through temporary 10.47.163.167 "
 
 read a
 if [ $a = "1" ]; then
-	ssh dl324b-1.cmb.usc.edu -l crocea -X
+	ssh 128.97.66.165 -l polyacti
 fi
 if [ $a = "2" ]; then
 	#ssh crocea@mahogany.usc.edu -X
