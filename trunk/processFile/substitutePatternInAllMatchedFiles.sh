@@ -79,6 +79,7 @@ if [ -n "$affectedFiles" ]; then
 	for f in $affectedFiles; do
 		echo $f
 		#added g in the end to make it exhaustive (replace every instances in one line, rather than 1st instance)
+		cp -ap $f $f.tmp	#to preserve the properties of the old file
 		if test "$partialWord" = "1" ; then
 			sed 's/'$oldTextPattern'/'$newTextPattern'/g' $f > $f.tmp;
 		else
