@@ -9,10 +9,10 @@ if test $# -lt 4 ; then
 	echo "	#. This program finds all input files given inputFileNamePattern in inputFolder,"
 	echo "	  and then replaces the oldTextPattern in each of those files with newTextPattern."
 	echo "	#. The text substitution is done by sed exhaustively (s/\b$oldTextPattern\b/.../g by default, s/$oldTextPattern/.../g if partialWord)."
-	echo "	#. It generates a $file.tmp file to hold the new content."
+	echo "	#. It generates a FILEPATH.tmp file to hold the new content for each FILEPATH."
 	echo "	#. If partialWord is 1, then oldTextPattern is matched without whole-word constraint. A word with partial match will be substituted too."
 	echo "	#. 	Default of partialWord is $partialWordDefault."
-	echo "	#. If commit is not empty (anything), this program will actually overwrite the original $file with $file.tmp."
+	echo "	#. If commit is not empty (anything), this program will actually overwrite the original FILEPATH with FILEPATH.tmp."
 	echo
 	echo "Examples:"
 	echo "	# whole-word substitution."
