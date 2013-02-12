@@ -27,6 +27,14 @@ if test $# -lt 1 ; then
 	echo "	#. GLIDEIN_MAX_IDLE_HOURS is the number of idling hours after which condor slave (not master) exits. Default is $GLIDEIN_MAX_IDLE_HOURS_DEFAULT ."
 	echo "	#. dbHost is the hostname for the database server (will be ssh tunnelled). Default is $targetHostDefault."
 	echo "	#. dbPort is the database daemon port on the dbHost. Default is $targetPortDefault."
+	echo
+	echo "Examples:"
+	echo "	# submit short/24-hr condor slaves, 1 cpu per node, max no. of slaves =490, cluster job walltime =24hrs, no ssh tunnel for, GLIDEIN_MAX_IDLE_HOURS is 0.5 (half an hour) "
+	echo "	$0 = 1 490 24 3 4 1 2 0 0.5"
+	echo
+	echo "	# submit long-hr (300-hr) condor slaves with ssh DB tunnel. 3 cpus per slave. GLIDEIN_MAX_IDLE_HOURS=300"
+	echo "	$0 = 3 35 300 5 4 1 2 1 300"
+	echo
 	exit 1
 fi
 condorHost=$1
