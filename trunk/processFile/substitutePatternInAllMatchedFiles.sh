@@ -70,6 +70,9 @@ if test "$runType" = "1"; then
 	echo "File overwriting option is on."
 	echo -n "Continue? (y/n): "
 	read answer
+	if [ -z $answer ]; then
+		exit 1
+	fi
 	if [ $answer != 'y' ]; then
 		exit 1
 	fi
