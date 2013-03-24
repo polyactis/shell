@@ -3,7 +3,7 @@
 # 2012.4.16 be careful of not running too many tunnels (>100s) through the same machine, the number of sshd processes for one user on each machine is limited. Will reject user login after that limit.
 source ~/.bash_profile
 
-tunnelNodeDefault=login1
+tunnelNodeDefault=login4
 tunnelNode=$1
 if [ -z $tunnelNode ]
 then
