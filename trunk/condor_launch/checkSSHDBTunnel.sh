@@ -2,8 +2,8 @@
 targetHost=crocea.mednet.ucla.edu
 targetPort=5432
 noOfGrepLines=`ps -ef OT|grep $targetHost:$targetPort|wc -l`
-ulimit -n 50000
-ulimit -u 50000
+#ulimit -n 50000 #2013.3.24 no need for these anymore. only one ssh tunnel process per node
+#ulimit -u 50000
 if test "$noOfGrepLines" = "2"; then	#sshTunnel is there. grep process will show up in ps -ef OT.
 	echo "sshDBTunnel=1"
 else
