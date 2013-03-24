@@ -2588,4 +2588,4 @@ DAGMAN_MAX_SUBMITS_PER_INTERVAL = 50
 checkSSHDBTunnel = /u/home/eeskin/polyacti/script/shell/condor_launch/checkSSHDBTunnel.sh
 STARTD_CRON_JOBLIST = $(STARTD_CRON_JOBLIST) checkSSHDBTunnel
 STARTD_CRON_checkSSHDBTunnel_EXECUTABLE = $(checkSSHDBTunnel)
-STARTD_CRON_checkSSHDBTunnel_PERIOD = 60
+STARTD_CRON_checkSSHDBTunnel_PERIOD = 5
