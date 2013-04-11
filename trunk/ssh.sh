@@ -11,7 +11,7 @@ echo "8. ssh-gw.gmi.oeaw"
 echo "9. mgmt01.gmi"
 echo "0. hpc-cmb.usc.edu"
 echo "11. aludra.usc.edu"
-echo "12. banyan through dl324b-1"
+echo "12. ICNNBackup, 128.97.66.154"
 echo "13. autism server 149.142.126.176"
 echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
@@ -74,7 +74,9 @@ if [ $a = "11" ]; then
 	#ssh yh@gan.usc.edu -X
 fi
 if [ $a = "12" ]; then
-	ssh -p 2222 dl324b-1.cmb.usc.edu -l crocea -X
+	#echo "12. banyan through dl324b-1"
+	#ssh -p 2222 dl324b-1.cmb.usc.edu -l crocea -X
+	ssh 128.97.66.154 -l polyacti
 fi
 
 if [ $a = "13" ]; then
