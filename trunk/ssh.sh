@@ -15,10 +15,11 @@ echo "12. ICNNBackup, 128.97.66.154"
 echo "13. autism server 149.142.126.176"
 echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
-echo "c. vervetNFS 10.47.163.171 through dl324b-1"
-echo "d. uclaOffice 10.8.0.10 through dl324b-1"
+echo "c. vervetNFS 10.47.163.171 through icnn1"
+echo "d. banyan 10.8.0.10 through icnn1"
 echo "e. uclaOffice through temporary 10.47.163.167 "
 
+ICNN1IP=128.97.66.154
 read a
 if [ $a = "1" ]; then
 	ssh 128.97.66.166 -l polyacti
@@ -76,7 +77,7 @@ fi
 if [ $a = "12" ]; then
 	#echo "12. banyan through dl324b-1"
 	#ssh -p 2222 dl324b-1.cmb.usc.edu -l crocea -X
-	ssh 128.97.66.154 -l polyacti
+	ssh $ICNN1IP -l polyacti
 fi
 
 if [ $a = "13" ]; then
@@ -93,10 +94,10 @@ if [ $a = "b" ]; then
 fi
 
 if [ $a = "c" ]; then
-	ssh -p 22222 dl324b-1.cmb.usc.edu -l crocea -X
+	ssh -p 22222 $ICNN1IP -l crocea -X
 fi
 if [ $a = "d" ]; then
-	ssh -p 22223 dl324b-1.cmb.usc.edu -l crocea -X
+	ssh -p 2222 $ICNN1IP -l crocea -X
 fi
 
 if [ $a = "e" ]; then
