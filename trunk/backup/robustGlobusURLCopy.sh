@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.bash_profile
+
 if test $# -lt 2; then
 	echo "Usage:"
 	echo "  $0 SOURCE DESTINATION"
