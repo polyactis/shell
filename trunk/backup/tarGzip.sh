@@ -1,27 +1,22 @@
 #!/bin/bash - 
-#===============================================================================
-#
-#          FILE:  tarGzip.sh
-# 
-#         USAGE:  ./tarGzip.sh 
-# 
-#   DESCRIPTION:  
-# 
-#       OPTIONS:  ---
-#  REQUIREMENTS:  ---
-#          BUGS:  ---
-#         NOTES:  ---
-#        AUTHOR: Nam Tran (), namtran@ucla.edu
-#  ORGANIZATION: ICNN, UCLA
-#       CREATED: 04/26/2013 02:33:18 PM PDT
-#      REVISION:  ---
-#===============================================================================
-
 #$ -V
 #$ -b y
 #$ -cwd
 #$ -l h_data=4G,time=330:00:00,highp
 
+if test $# -lt 2 ; then
+	echo "  $0 inputFolder outputFile"
+	echo ""
+	echo "Note:"
+	echo "	inputFolder is the one to be backed-up."
+	echo "	outputFile is the gzip file to store the backup, in the form of x.tar.gz."
+	echo ""
+	echo "Examples:"
+	echo "	$0 ~/Data ~/Data.tar.gz"
+	echo "	$0 ~/panasas/Data ~/Data.tar.gz"
+	exit 1
+fi
+date
 set -e
 source error_handling
 script_start
@@ -38,7 +33,4 @@ tar -h -cpzf $outputFile $inputFolder
 #f <filename> - specifies where to store the backup, backup.tar.gz is the filename used in this example. It will be stored in the current working directory, the one you set when you used the cd command.
 
 script_end
-
-
-
-
+date
