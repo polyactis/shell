@@ -26,7 +26,9 @@ commandLine="$globusURLCopyPath -sync-level 2 -sync -p 40 -vb -r $sourceDir $des
 echo commandLine is $commandLine
 
 stderrFname=/tmp/stderr.txt
-if test -w $stderrFname; then
+touch $stderrFname
+touchExitCode=$?
+if test $touchExitCode -eq 0; then
 	echo "$stderrFname is writable."
 else
 	echo "Error: Could not write to $stderrFname"
