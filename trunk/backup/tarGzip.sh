@@ -18,8 +18,6 @@ if test $# -lt 2 ; then
 fi
 date
 set -e
-source error_handling
-script_start
 
 inputFolder=$1
 outputFile=$2
@@ -32,5 +30,4 @@ tar -h -cpzf $outputFile $inputFolder
 #z - compress the backup file with 'gzip' to make it smaller.
 #f <filename> - specifies where to store the backup, backup.tar.gz is the filename used in this example. It will be stored in the current working directory, the one you set when you used the cd command.
 
-script_end
 date
