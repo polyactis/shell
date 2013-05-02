@@ -25,9 +25,27 @@ globusURLCopyPath=`which globus-url-copy`
 commandLine="$globusURLCopyPath -sync-level 2 -sync -p 40 -vb -r $sourceDir $destinationDir"
 echo commandLine is $commandLine
 
-$commandLine
+stderrFname=/tmp/stderr.txt
+if test -w $stderrFname; then
+	echo "$stderrFname is writable."
+else
+	echo "Error: Could not write to $stderrFname"
+	exit 1
+fi
+#catch the stderr for later checking
+$commandLine 2> $stderrFname
 exitCode=$?
+grep "Permission denied" $stderrFname
+grepExitCode=$?
 if test $exitCode != "0"; then
-	$0 $sourceDir $destinationDir
+	cat $stderrFname
+	if test $grepExitCode != "0"; then
+		#keep going if it's not Permission denied error
+		echo "Re-run this program ..."
+		$0 $sourceDir $destinationDir
+	else
+		echo "Exit as permission denied is encountered."
+		exit $exitCode
+	fi
 fi
 
