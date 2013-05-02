@@ -18,6 +18,8 @@ echo "b. hpc-login2.usc.edu"
 echo "c. vervetNFS 10.47.163.171 through icnn1"
 echo "d. banyan 10.8.0.10 through icnn1"
 echo "e. uclaOffice through temporary 10.47.163.167 "
+echo "f. hoffman2 as namtran"
+echo "g. hoffman2 as charlesb"
 
 ICNN1IP=128.97.66.154
 read a
@@ -102,4 +104,12 @@ fi
 
 if [ $a = "e" ]; then
 	ssh crocea@10.47.163.167 -p 1999
+fi
+
+if [ $a = "f" ]; then
+	ssh hoffman2.idre.ucla.edu -l namtran
+fi
+
+if [ $a = "g" ]; then
+	ssh hoffman2.idre.ucla.edu -l charlesb 
 fi
