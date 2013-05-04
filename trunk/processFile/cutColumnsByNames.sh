@@ -10,7 +10,7 @@ if test $# -lt 2 ; then
 	echo " 	2. if the delimiter is tab, put 'tab' there. For single-space or other character , put it as it is."
 	echo
 	echo "Examples:"
-	echo "	$0 method_36_Contig791_replicated_phasedByGATK.vcf tab 1511_639_1987079_GA_vs_524copy3 1016_725_1995116_GA_vs_524copy7"
+	echo "	$0 method_36_Contig791_replicated_phasedByGATK.vcf tab \"#CHROM\" POS ID REF ALT QUAL FORMAT 1511_639_1987079_GA_vs_524copy3 1016_725_1995116_GA_vs_524copy7"
 	exit 1
 fi
 
@@ -35,10 +35,12 @@ for columnHeader in $columnNames; do
 	fi
 	columnIndex=`echo $columnIndex|tr " " ","`
 	echo $columnIndex
-	if test -z $columnIndices; then
-		columnIndices=$columnIndex
-	else
-		columnIndices=$columnIndices,$columnIndex
+	if test -n "$columnIndex"; then
+		if test -z $columnIndices; then
+			columnIndices=$columnIndex
+		else
+			columnIndices=$columnIndices,$columnIndex
+		fi
 	fi
 done
 columnIndicesSplitByComma=$columnIndices
