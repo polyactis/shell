@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ~/.bash_profile
+set -euvx
+#source ~/.bash_profile
 
 if test $# -lt 2; then
 	echo "Usage:"
@@ -44,7 +45,7 @@ if test $exitCode != "0"; then
 	if test $grepExitCode != "0"; then
 		#keep going if it's not Permission denied error
 		echo "Re-run this program ..."
-		$0 $sourceDir $destinationDir
+		bash $0 $sourceDir $destinationDir
 	else
 		echo "Exit as permission denied is encountered."
 		exit $exitCode
