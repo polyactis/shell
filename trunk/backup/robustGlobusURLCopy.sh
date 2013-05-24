@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euvx
+set -vx
 #source ~/.bash_profile
 
 if test $# -lt 2; then
@@ -50,5 +50,7 @@ if test $exitCode != "0"; then
 		echo "Exit as permission denied is encountered."
 		exit $exitCode
 	fi
+else
+	echo "Exit code is $exitCode. Exits normally"
+	exit 0
 fi
-
