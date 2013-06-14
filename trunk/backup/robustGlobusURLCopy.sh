@@ -2,8 +2,6 @@
 
 source ~/.bash_profile
 
-#for shell debug purpose (display every commandline before it is executed)
-set -vx
 
 if test $# -lt 2; then
 	echo "Usage:"
@@ -26,6 +24,8 @@ if test $# -lt 2; then
 	echo
 	exit 1
 fi
+#for shell debug purpose (display every commandline before it is executed)
+set -vx
 sourceDir=$1
 destinationDir=$2
 toggleRecursive=$3
