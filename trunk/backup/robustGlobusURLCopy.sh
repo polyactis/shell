@@ -48,12 +48,14 @@ else
 	exit 1
 fi
 #catch the stderr for later checking
-$commandLine 2> tee -a $stderrFname
+date | tee -a $stderrFname
+echo $commandLine | tee -a $stderrFname
+$commandLine 2>&1 | tee -a $stderrFname
 exitCode=$?
 grep "Permission denied" $stderrFname
 grepExitCode=$?
 if test $exitCode != "0" && test $toggleRecursive = "1"; then
-	cat $stderrFname
+	#cat $stderrFname
 	if test $grepExitCode != "0"; then
 		#keep going if it's not Permission denied error
 		echo "Re-run this program ..."
