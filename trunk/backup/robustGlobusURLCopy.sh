@@ -48,7 +48,7 @@ else
 	exit 1
 fi
 #catch the stderr for later checking
-$commandLine 2> $stderrFname
+$commandLine 2> tee -a $stderrFname
 exitCode=$?
 grep "Permission denied" $stderrFname
 grepExitCode=$?
