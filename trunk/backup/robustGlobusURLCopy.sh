@@ -38,7 +38,8 @@ globusURLCopyPath=`which globus-url-copy`
 commandLine="$globusURLCopyPath -sync-level 2 -sync -p 40 -vb -r $sourceDir $destinationDir"
 echo commandLine is $commandLine
 
-stderrFname=/tmp/stderr.txt
+stderrFname=/tmp/stderr`python -c "import time; print time.time();"`
+echo "stderr will be directed to $stderrFname"
 `which touch` $stderrFname
 touchExitCode=$?
 if test $touchExitCode -eq 0; then
