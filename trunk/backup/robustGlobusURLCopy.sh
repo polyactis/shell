@@ -50,7 +50,8 @@ fi
 #catch the stderr for later checking
 date | tee -a $stderrFname
 echo $commandLine | tee -a $stderrFname
-$commandLine 2>&1 | tee -a $stderrFname
+#$commandLine 2>&1 | tee -a $stderrFname
+$commandLine 2>> $stderrFname
 exitCode=$?
 grep "Permission denied" $stderrFname
 grepExitCode=$?
