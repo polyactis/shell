@@ -104,9 +104,11 @@ fi
 
 #echo "condor will claim $cpuNoMultiplier\X as many cpus available."
 #2012.3.29 -17Mb for each 1G because not all memory is available to the userspace condor daemon. i.e. a 32Gb machine has 530Mb memory unavailable.
+#deduce from /proc/meminfo
 memoryAvailableInKB=`cat /proc/meminfo |head -n 1|awk -F ' ' '{print $2}'`
-memoryAvailableInMB=`echo $memoryAvailableInKB/\(1024+17\)|bc`
-memoryRequiredInMB=`echo $memoryRequired*$noOfCPUs*\(1024-17\)|bc`
+memoryAvailableInMB=`echo $memoryAvailableInKB/\(1024+1\)|bc`
+#what user requested
+memoryRequiredInMB=`echo $memoryRequired*$noOfCPUs*\(1024-27\)|bc`
 
 memoryRequiredAfterMultiplying=`echo $memoryRequiredInMB*$memoryMultiplier|bc`
 
