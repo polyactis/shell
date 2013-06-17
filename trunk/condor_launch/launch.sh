@@ -151,10 +151,14 @@ else
 	#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
 fi
 
-condor_master -f -r $expirationInMins
+
+exec condor_master -f -r $expirationInMins
 
 #-f: Causes the daemon to start up in the foreground. Instead of forking, the daemon runs in the foreground.
 #-r MINUTES: Causes the daemon to set a timer, upon expiration of which, it sends itself a SIGTERM for graceful shutdown.
-# 2012.4.17 delete everything in the local config folder
-rm $LOCAL_DIR -rf
 
+# 2012.4.17 delete everything in the local config folder
+# 2013.06.16 set cleanup as a trap because condor_master is run with "exec", replacing parental shell process and any command after that will be ignored.
+# 2013.06.16 it doesn't work to insert this trap statement in front of "exec ..."
+#trap "rm $LOCAL_DIR -rf; exit" 1 9 15
+rm $LOCAL_DIR -rf
