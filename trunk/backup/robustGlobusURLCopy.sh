@@ -56,6 +56,7 @@ $commandLine 2>> $stderrFname
 exitCode=$?
 grep "Permission denied" $stderrFname
 grepExitCode=$?
+date
 if test $exitCode != "0" && test $toggleRecursive = "1"; then
 	#cat $stderrFname
 	if test $grepExitCode != "0"; then

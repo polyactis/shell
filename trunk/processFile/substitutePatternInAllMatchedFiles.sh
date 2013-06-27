@@ -25,10 +25,14 @@ if test $# -lt 4 ; then
 	echo "	# delete the .tmp files"
 	echo "	$0 pymodule/ \"*.py\" dataDir data_dir 0 2"
 	echo
-	echo "	#check the .tmp files to see if things were done properly, if yes, do this."
+	echo "	# check the .tmp files to see if things were done properly, if yes, do this."
 	echo "	$0 pymodule/ \"*.py\" dataDir data_dir 0 1"
-	echo "	#partial word substitution"
+	echo
+	echo "	# partial word substitution"
 	echo "	$0 pymodule/ \"*.py\" dataDir data_dir 1"
+	echo
+	echo " 	# re-set Java memory Xmx size (pymodule/pegasus/shell/modifyPegasusJobContent.sh can't do this)"
+	echo " 	$0 work/InspectAlignment/InspectPopulationMonkeyAlignment_RefSeq3488_AlnMethod6_GATKDOC.2013.Jun.21T105136/ "DOCWalkerJava_*.sub"  Xmx7500m Xmx9500m 1 1"
 	echo
 	exit 1
 fi
