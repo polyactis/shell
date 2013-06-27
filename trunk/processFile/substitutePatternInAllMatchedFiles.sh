@@ -31,16 +31,21 @@ if test $# -lt 4 ; then
 	echo "	# partial word substitution"
 	echo "	$0 pymodule/ \"*.py\" dataDir data_dir 1"
 	echo
-	echo " 	# re-set Java memory Xmx size (pymodule/pegasus/shell/modifyPegasusJobContent.sh can't do this)"
+	echo " 	# re-set Java memory Xmx size (pymodule/pegasus/shell/modifyPegasusJobContent.sh can't do this), partial word must be on as Xmx is in the context of --Xmx7500m"
 	echo " 	$0 work/InspectAlignment/InspectPopulationMonkeyAlignment_RefSeq3488_AlnMethod6_GATKDOC.2013.Jun.21T105136/ "DOCWalkerJava_*.sub"  Xmx7500m Xmx9500m 1 1"
+	echo
+	echo "	# partial word must be on as pattern contains non-alphanumerical characters"
+	echo "	$0 work/RefineCall/BeagleTrioCallerOnMethod101Scaffold96_100.2013.Jun.27T150359/ "CombineVariantsJava_ID00*sub" ":beagle" ":first"  1 1"
 	echo
 	exit 1
 fi
 
+#2013.06.27 debug
+#set -vx
 inputFolder=$1
 inputFileNamePattern=$2
-oldTextPattern=$3
-newTextPattern=$4
+oldTextPattern="$3"
+newTextPattern="$4"
 partialWord=$5
 if [ -z $partialWord ]
 then
@@ -52,6 +57,8 @@ if [ -z $runType ]
 then
 	runType=$runTypeDefault
 fi
+echo "oldTextPattern is $oldTextPattern"
+echo "newTextPattern is $newTextPattern"
 echo "partialWord is $partialWord."
 echo "runType is $runType."
 
@@ -63,9 +70,9 @@ if [ -z "$filesWithMatchingNames" ]; then
 fi
 
 if test "$partialWord" = "1" ; then
-	affectedFiles=`grep -l $oldTextPattern $filesWithMatchingNames`
+	affectedFiles=`grep -l "$oldTextPattern" $filesWithMatchingNames`
 else
-	affectedFiles=`grep -w -l $oldTextPattern $filesWithMatchingNames`
+	affectedFiles=`grep -w -l "$oldTextPattern" $filesWithMatchingNames`
 fi
 
 
