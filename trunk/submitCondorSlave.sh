@@ -199,7 +199,13 @@ fi
 
 echo tunnelProcessID is \$tunnelProcessID
 
-~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
+if test "\$sshDBTunnel" = "1"; then
+	#do not use exec because the ssh tunnel daemon process needs to be killed
+	~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
+else
+	exec ~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
+fi
+
 #2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
 
 if test \$tunnelProcessID -gt 0; then
