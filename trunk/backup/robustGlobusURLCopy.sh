@@ -57,9 +57,9 @@ exitCode=$?
 grep "Permission denied" $stderrFname
 grepExitCode=$?
 date
-if test $exitCode != "0" && test $toggleRecursive = "1"; then
+if test $exitCode -ne 0 && test $toggleRecursive -eq 1 ; then
 	#cat $stderrFname
-	if test $grepExitCode != "0"; then
+	if test $grepExitCode -ne 0 ; then
 		#keep going if it's not Permission denied error
 		echo "Re-run this program ..."
 		bash $0 $sourceDir $destinationDir
