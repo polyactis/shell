@@ -203,6 +203,7 @@ if test "\$sshDBTunnel" = "1"; then
 	#do not use exec because the ssh tunnel daemon process needs to be killed
 	~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
 else
+	#exec #2013.07.17 temporary suspend it
 	exec ~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
 fi
 
