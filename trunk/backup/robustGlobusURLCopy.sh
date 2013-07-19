@@ -68,6 +68,6 @@ if test $exitCode -ne 0 && test $toggleRecursive -eq 1 ; then
 		exit $exitCode
 	fi
 else
-	echo "Exit code is $exitCode. Exits normally"
+	echo "Exit code is $exitCode. toggleRecursive is $toggleRecursive. Exits with zero code."
 	exit 0
 fi
