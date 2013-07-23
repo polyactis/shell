@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Which host:"
-echo "1. ICNNBackup, 128.97.66.166"
+echo "1. ICNNBackup, 128.97.66.147"
 echo "2. vervetNFS 10.47.163.171"
 echo "3. hoffman2"
 echo "4. banyan"
@@ -24,7 +24,7 @@ echo "g. hoffman2 as charlesb"
 ICNN1IP=128.97.66.154
 read a
 if [ $a = "1" ]; then
-	ssh 128.97.66.166 -l polyacti
+	ssh 128.97.66.147 -l polyacti
 fi
 if [ $a = "2" ]; then
 	#ssh crocea@mahogany.usc.edu -X
