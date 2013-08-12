@@ -29,7 +29,7 @@ SLOT_TYPE_1_PARTITIONABLE=TRUE
 NUM_SLOTS_TYPE_1 = 1
 NUM_SLOTS = 1
 
-START = ($(NonCondorLoadAvg)<=$(DETECTED_CORES)*3)	
+START = ($(NonCondorLoadAvg)<=$(DETECTED_CORES)*2)	
 #2013.07.18 only start job if the non-condor load average is below 3 X #cpus (load 1.0 = 1 cpu 100% usage). True
 SUSPEND = False
 CONTINUE = True
