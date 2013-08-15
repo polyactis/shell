@@ -16,6 +16,7 @@ if test $# -lt 4 ; then
 	echo "	#. If runType is 0, this program leaves the new content in FILEPATH.tmp but do not overwrite the original one."
 	echo "	#. If runType is 1, this program will actually overwrite the original FILEPATH with FILEPATH.tmp."
 	echo "	#. If runType is 2, this program deletes FILEPATH.tmp left by runType 0."
+	echo "  #. If runType is 3, same effect as runType 1 but no user-asking, just execute."
 	echo "	#. Default runType is $runTypeDefault."
 	echo
 	echo "Examples:"
@@ -100,7 +101,7 @@ if [ -n "$affectedFiles" ]; then
 			sed 's/\b'$oldTextPattern'\b/'$newTextPattern'/g' $f > $f.tmp;
 		fi
 		
-		if test "$runType" = "1"; then
+		if test "$runType" = "1" || test "$runType" = "3"; then
 			mv $f.tmp $f
 		elif test "$runType" = "2"; then
 			rm $f.tmp
