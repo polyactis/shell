@@ -1,106 +1,24 @@
 #!/bin/bash
 
-cpuNoMultiplierDefault=1
-memoryRequiredDefault=10
-memoryMultiplierDefault=1
-sshDBTunnelDefault=0
-GLIDEIN_MAX_IDLE_HOURS_DEFAULT=3
+shellDir=`dirname $0`
+source $shellDir/common.sh
 
 if test $# -lt 1 ; then
-	echo "  $0 [noOfCPUs] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel] [GLIDEIN_MAX_IDLE_HOURS] [condorHost]"
+	echo "  $0 [noOfCPUs] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel] [GLIDEIN_MAX_IDLE_HOURS] [condorCM] [cmNumber]"
 	echo ""
 	echo "Note:"
-	echo "	#. noOfCPUs is passed to SGE on how many cpus to occupy on each node. But condor takes all cpus on each node. Default is what condor detects."
-	echo "	#. cpuNoMultiplier is to let condor claim it has noOfCPUs*cpuNoMultiplier cpus. Default is $cpuNoMultiplierDefault."
-	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault. Final memory that condor will broadcast is memoryRequired*noOfCPUs."
-	echo "	#. memoryMultiplier is to let condor claim it has memoryRequired*memoryMultiplier memory. Default is $memoryMultiplierDefault."
-	echo "	#. sshDBTunnel is the variable added to the machine classAd. If =1, means this machine has a ssh tunnel to access psql db on dl324b-1. Otherwise (=0 or non-1), it does not. Make sure run ~/script/shell/sshTunnelForDB.sh on =1 machines. Default value is $sshDBTunnelDefault"
-	echo "  #. condorHost is the condor central manager. If it is "-", hostname of the machine itself is taken as central manager. If not provided, it will try to read the central manager from ~/condor_central_manager.txt or become central manager on its own if the latter file is empty or non-existent."
-	echo "	#. GLIDEIN_MAX_IDLE_HOURS is the number of idling hours after which condor slave (not master) exits. Default is $GLIDEIN_MAX_IDLE_HOURS_DEFAULT ."
+	echo "$noOfCPUsOptionDesc"
+	echo $cpuNoMultiplierOptionDesc 
+	echo $memoryRequiredOptionDesc
+	echo $memoryMultiplierOptiondesc
+	echo $sshDBTunnelOptionDesc
+	echo $GLIDEIN_MAX_IDLE_HOURSOptionDesc
+	echo $condorCMOptionDesc
+	echo $cmNumberOptionDesc
 	exit 1
 fi
 set -e
-noOfCPUs=$1
-memoryRequired=$2
-cpuNoMultiplier=$3
-memoryMultiplier=$4
-sshDBTunnel=$5
-GLIDEIN_MAX_IDLE_HOURS=$6
-condorHost=$7	#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
 
-centralManagerFilename=~/condor_central_manager.txt
-if test -f $centralManagerFilename; then
-	centralManagerHostname=`cat $centralManagerFilename`
-else
-	centralManagerHostname=""
-fi
-machineHostname=`hostname -f`
-thisIsSlave=0
-if [ "x$condorHost" = "x-" ]; then
-	#echo "assuming I'm the new master!"
-	CONDOR_HOST=$machineHostname
-	CONDOR_DAEMON_LIST="MASTER, COLLECTOR, NEGOTIATOR, STARTD, SCHEDD"
-	thisIsSlave=0
-elif [ "x$condorHost" = "x" ]; then
-	if test -f $centralManagerFilename; then
-		condorHost=$centralManagerHostname
-	fi
-	if [ "x$condorHost" = "x" ]; then
-		#echo "No master host fetched - assuming I'm the new master!"
-		CONDOR_HOST=$machineHostname
-		CONDOR_DAEMON_LIST="MASTER, COLLECTOR, NEGOTIATOR, STARTD, SCHEDD"
-		thisIsSlave=0
-		#echo "When registering workers, please specify $CONDOR_HOST as the central manager"
-	else
-		#echo "Starting worker for the master at $condorHost"
-		CONDOR_HOST=$condorHost
-		CONDOR_DAEMON_LIST="MASTER, STARTD"
-		thisIsSlave=1
-	fi
-else
-	#echo "Starting worker for the master at $condorHost"
-	CONDOR_HOST=$condorHost
-	CONDOR_DAEMON_LIST="MASTER, STARTD"
-	thisIsSlave=1
-fi
-
-
-if [ "x$noOfCPUs" = "x" ]; then
-	#echo "No noOfCPUs given. set it to \$(DETECTED_CORES)"
-	noOfCPUs="\$(DETECTED_CORES)";
-fi
-
-#2012.8.5 set the noOfCPUs to zero if the machineHostname=centralManagerHostname
-if test "$machineHostname" = "$centralManagerHostname"; then
-	noOfCPUs=0
-fi
-
-#echo "noOfCPUs set to $noOfCPUs."
-
-if [ -z $cpuNoMultiplier ]
-then
-	cpuNoMultiplier=$cpuNoMultiplierDefault
-fi
-
-if [ -z $memoryRequired ]
-then
-	memoryRequired=$memoryRequiredDefault
-fi
-
-if [ -z $memoryMultiplier ]
-then
-	memoryMultiplier=$memoryMultiplierDefault
-fi
-
-if [ -z $sshDBTunnel ]
-then
-	sshDBTunnel=$sshDBTunnelDefault
-fi
-
-if [ -z $GLIDEIN_MAX_IDLE_HOURS ]
-then
-	GLIDEIN_MAX_IDLE_HOURS=$GLIDEIN_MAX_IDLE_HOURS_DEFAULT
-fi
 
 #echo "condor will claim $cpuNoMultiplier\X as many cpus available."
 #2012.3.29 -17Mb for each 1G because not all memory is available to the userspace condor daemon. i.e. a 32Gb machine has 530Mb memory unavailable.
@@ -123,7 +41,6 @@ CONDOR=condor
 
 # this will contain logs/execute/spool
 # 2012.7.31 remove . from the currentUnixTime, or condor_startd name
-currentUnixTime=`echo "import time; print str(time.time()).replace('.', '_')"|python`
 
 localCondorConfigFile=/tmp/condor$currentUnixTime.condor_config.local
 #2012.5.8 delete it first if it exists
@@ -131,8 +48,6 @@ if test -r $localCondorConfigFile; then
 	rm $localCondorConfigFile >& /dev/null
 fi
 # provide a backbone local config file
-TOP_DIR=`dirname $0`
-TOP_DIR=`cd $TOP_DIR && pwd`
 cp $TOP_DIR/condor_config.local $localCondorConfigFile
 
 #2012.2.27 setup proper memory

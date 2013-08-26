@@ -1,5 +1,8 @@
 #!/bin/sh
 
+shellDir=`dirname $0`
+source $shellDir/condor_launch/common.sh
+
 noOfCpusPerNodeDefault=8
 noOfCondorSlavesDefault=100
 noOfHoursToLiveDefault=24
@@ -13,18 +16,20 @@ targetHostDefault=crocea.mednet.ucla.edu
 targetPortDefault=5432
 
 if test $# -lt 1 ; then
-	echo "  $0 condorHost [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel]  [GLIDEIN_MAX_IDLE_HOURS] [dbHost] [dbPort]"
+	echo "  $0 condorCM [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel]  [GLIDEIN_MAX_IDLE_HOURS] [cmNumber] [dbHost] [dbPort]"
 	echo ""
 	echo "Note:"
-	echo "	#. condorHost is the node where the master is. If condorHost is -, then itself will become central manger. If it equals =, then it will try to get central manager hostname from ~/condor_central_manager.txt or become central manger itself if the latter is empty. This script absorbs submitCondorMaster.sh's functionality. The latter is not longer maintained. "
+	echo "$condorCMOptionDesc"
 	echo "	#. noOfCpusPerNode is passed to SGE on how many cpus to occupy on each node. But condor takes all cpus on each node. Default is $noOfCpusPerNodeDefault."
 	echo "	#. noOfCondorSlaves is the max number of condor slaves running/in SGE queue. Default is $noOfCondorSlavesDefault. The script goes into sleep and checks periodically to see whether it needs to submit another slave job."
 	echo "	#. noOfHoursToLive is the number of hours for the slave to remain alive. Default is $noOfHoursToLiveDefault. If it's more than 24, argument highp will be added, which limits jobs to 2 queues, eeskin_idre.q and eeskin_pod.q."
 	echo "	#. noOfSleepSeconds is the number of seconds for this script to sleep before it submits another condor slave job. Default is $noOfSleepSecondsDefault."
-	echo "	#. memoryRequired is the amount of memory needed for this job in unit of Giga-byte. Default is $memoryRequiredDefault."
-	echo "	#. cpuNoMultiplier is to let condor claim it has noOfCpusPerNode*cpuNoMultiplier cpus. Default is $cpuNoMultiplierDefault."
-	echo "	#. memoryMultiplier is to let condor claim it has memoryRequired*memoryMultiplier memory. Default is $memoryMultiplierDefault."
-	echo "	#. GLIDEIN_MAX_IDLE_HOURS is the number of idling hours after which condor slave (not master) exits. Default is $GLIDEIN_MAX_IDLE_HOURS_DEFAULT ."
+	echo "$memoryRequiredOptionDesc"
+	echo "$memoryMultiplierOptiondesc"
+	echo "$cpuNoMultiplierOptionDesc"
+	echo "$GLIDEIN_MAX_IDLE_HOURSOptionDesc"
+	echo "$sshDBTunnelOptionDesc"
+	echo "$cmNumberOptionDesc"
 	echo "	#. dbHost is the hostname for the database server (will be ssh tunnelled). Default is $targetHostDefault."
 	echo "	#. dbPort is the database daemon port on the dbHost. Default is $targetPortDefault."
 	echo
@@ -32,18 +37,14 @@ if test $# -lt 1 ; then
 	echo "	# submit short/24-hr condor slaves, 1 cpu per node, max no. of slaves =490, cluster job walltime =24hrs, no ssh tunnel for, GLIDEIN_MAX_IDLE_HOURS is 0.5 (half an hour) "
 	echo "	$0 = 1 490 24 3 4 1 2 0 0.5"
 	echo
-	echo "	# submit long-hr (300-hr) condor slaves with ssh DB tunnel. 3 cpus per slave. GLIDEIN_MAX_IDLE_HOURS=300"
-	echo "	$0 = 3 35 300 5 4 1 2 1 300"
+	echo "	# submit long-hr (300-hr) condor slaves with ssh DB tunnel. 3 cpus per slave. GLIDEIN_MAX_IDLE_HOURS=300, use 2nd host from ~/condor_central_manager.txt as central manager"
+	echo "	$0 = 3 35 300 5 4 1 2 1 300 2"
 	echo
 	exit 1
 fi
-condorHost=$1
+condorCM=$1
 thisIsSlave=1
-#2012.4.16 set condorHost to nothing if it is "=". This will cause launch.sh to read from ~/condor_central_manager.txt to get the central manager or become central manager itself if the latter file is empty.
-if test "$condorHost" = "="; then
-	condorHost=""
-fi
-if test "$condorHost" = "-"; then
+if test "$condorCM" = "-"; then
 	thisIsSlave=0
 fi
 
@@ -52,11 +53,13 @@ if [ -z $noOfCpusPerNode ]
 then
 	noOfCpusPerNode=$noOfCpusPerNodeDefault
 fi
+
 noOfCondorSlaves=$3
 if [ -z $noOfCondorSlaves ]
 then
 	noOfCondorSlaves=$noOfCondorSlavesDefault
 fi
+
 noOfHoursToLive=$4
 if [ -z $noOfHoursToLive ]
 then
@@ -104,6 +107,13 @@ then
 fi
 
 shift
+cmNumber=$9
+if [ -z $cmNumber ]
+then
+	cmNumber=$cmNumberDefault
+fi
+
+shift
 targetHost=$9
 if [ -z $targetHost ]
 then
@@ -123,14 +133,20 @@ countCondorSJobs () {
 }
 shellRepositoryPath=`dirname $0`
 reportArguments () {
+	echo "condorCM=$condorCM"
+	echo "noOfCpusPerNode=$noOfCpusPerNode"
+	echo "noOfCondorSlaves=$noOfCondorSlaves"
 	echo "$noOfCpusPerNode cpus for each condor slave."
-	echo "Master is $condorHost ."
+	echo "Master (central manager) is $condorCM ."
 	echo "qsub job will live for $noOfHoursToLive hours."
 	echo "condor will live for $noOfCondorHours.8 hours."
 	echo "condor will claim $noOfCpusPerNode X$cpuNoMultiplier cpus available."
 	echo "condor will claim $memoryRequired X$memoryMultiplier Gb memory."
 	echo "sshDBTunnel=$sshDBTunnel."
 	echo "GLIDEIN_MAX_IDLE_HOURS=$GLIDEIN_MAX_IDLE_HOURS."
+	echo "central manager number=$cmNumber."
+	echo "targetHost=$targetHost"
+	echo "targetPort=$targetPort"
 	noOfCondorJobs=`countCondorSJobs`
 	echo $noOfCondorJobs condor jobs now, to reach $noOfCondorSlaves.
 }
@@ -201,13 +217,13 @@ echo tunnelProcessID is \$tunnelProcessID
 
 if test "\$sshDBTunnel" = "1"; then
 	#do not use exec because the ssh tunnel daemon process needs to be killed
-	~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
+	~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
 else
 	#exec #2013.07.17 temporary suspend it
-	exec ~/script/shell/condor_launch/launch.sh $noOfCondorHours.8 $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorHost
+	exec ~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
 fi
 
-#2012.10.14 condorHost has to be last because it's usually empty (=getting condorHost from $centralManagerFilename).
+#2012.10.14 condorCM has to be last because it's usually empty (=getting condorCM from $centralManagerFilename).
 
 if test \$tunnelProcessID -gt 0; then
 	kill -term \$tunnelProcessID
@@ -216,6 +232,8 @@ EOF
 		qsub $jobscriptFileName
 		#rm $jobscriptFileName
 		#$ -q eeskin_idre.q
+	else
+		reportArguments
 	fi
 	echo "sleep now for $noOfSleepSeconds seconds"
 	sleep $noOfSleepSeconds
