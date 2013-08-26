@@ -8,13 +8,13 @@ if test $# -lt 1 ; then
 	echo ""
 	echo "Note:"
 	echo "$noOfCPUsOptionDesc"
-	echo $cpuNoMultiplierOptionDesc 
-	echo $memoryRequiredOptionDesc
-	echo $memoryMultiplierOptiondesc
-	echo $sshDBTunnelOptionDesc
-	echo $GLIDEIN_MAX_IDLE_HOURSOptionDesc
-	echo $condorCMOptionDesc
-	echo $cmNumberOptionDesc
+	echo "$cpuNoMultiplierOptionDesc"
+	echo "$memoryRequiredOptionDesc"
+	echo "$memoryMultiplierOptiondesc"
+	echo "$sshDBTunnelOptionDesc"
+	echo "$GLIDEIN_MAX_IDLE_HOURSOptionDesc"
+	echo "$condorCMOptionDesc"
+	echo "$cmNumberOptionDesc"
 	exit 1
 fi
 set -e

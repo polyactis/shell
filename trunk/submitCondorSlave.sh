@@ -133,22 +133,22 @@ countCondorSJobs () {
 }
 shellRepositoryPath=`dirname $0`
 reportArguments () {
-	echo "condorCM=$condorCM"
-	echo "noOfCpusPerNode=$noOfCpusPerNode"
-	echo "noOfCondorSlaves=$noOfCondorSlaves"
-	echo "$noOfCpusPerNode cpus for each condor slave."
-	echo "Master (central manager) is $condorCM ."
-	echo "qsub job will live for $noOfHoursToLive hours."
-	echo "condor will live for $noOfCondorHours.8 hours."
-	echo "condor will claim $noOfCpusPerNode X$cpuNoMultiplier cpus available."
-	echo "condor will claim $memoryRequired X$memoryMultiplier Gb memory."
-	echo "sshDBTunnel=$sshDBTunnel."
-	echo "GLIDEIN_MAX_IDLE_HOURS=$GLIDEIN_MAX_IDLE_HOURS."
-	echo "central manager number=$cmNumber."
-	echo "targetHost=$targetHost"
-	echo "targetPort=$targetPort"
+	echo "    condorCM=$condorCM"
+	echo "    noOfCpusPerNode=$noOfCpusPerNode"
+	echo "    noOfCondorSlaves=$noOfCondorSlaves"
+	echo "    $noOfCpusPerNode cpus for each condor slave."
+	echo "    Master (central manager) is $condorCM ."
+	echo "    qsub job will live for $noOfHoursToLive hours."
+	echo "    condor will live for $noOfCondorHours.8 hours."
+	echo "    condor will claim $noOfCpusPerNode X$cpuNoMultiplier cpus available."
+	echo "    condor will claim $memoryRequired X$memoryMultiplier Gb memory."
+	echo "    sshDBTunnel=$sshDBTunnel."
+	echo "    GLIDEIN_MAX_IDLE_HOURS=$GLIDEIN_MAX_IDLE_HOURS."
+	echo "    central manager number=$cmNumber."
+	echo "    targetHost=$targetHost"
+	echo "    targetPort=$targetPort"
 	noOfCondorJobs=`countCondorSJobs`
-	echo $noOfCondorJobs condor jobs now, to reach $noOfCondorSlaves.
+	echo "    $noOfCondorJobs condor jobs now, to reach $noOfCondorSlaves."
 }
 
 reportArguments
