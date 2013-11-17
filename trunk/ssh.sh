@@ -34,7 +34,7 @@ fi
 
 if [ $a = "3" ]; then
 	#ssh zhoudb.usc.edu -l yh -X
-	ssh hoffman2.idre.ucla.edu -l polyacti -X
+	ssh login4.hoffman2.idre.ucla.edu -l polyacti -X
 fi
 
 
