@@ -78,11 +78,15 @@ then
 fi
 
 # before routing, destination-NAT: translate any request to EXT_IP:EXT_PORT to a request to INT_IP:INT_PORT
-echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
-$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
+# 2014.01.01 somehow this option is not working well, related to "--sports $INT_PORT". so use the alternative below this.
+#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
+#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
 
-### 2011-8-4 INT_PORT in "--to-destination $INT_IP:$INT_PORT " below uses port1-port2 to describe a port range. so use multiport to keep consistency.
-#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+### 2011-8-4 INT_PORT in "--to-destination $INT_IP:$INT_PORT " below uses a different format, port1-port2, rather than port1:port2, to describe a port range.
+#. So opt to use multiport from above to keep consistency.
+## 2014.01.01 activated this method because somehow method above stopped working.
+echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
 
 # log (not really working)
 #echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
