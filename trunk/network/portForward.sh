@@ -58,7 +58,7 @@ shift
 DELETE_RULE=$9
 if test -n "$DELETE_RULE"
 then
-	if test $DELETE_RULE == "1"
+	if test "$DELETE_RULE" = "1"
 	then
 		CHAIN_OPERATION=-D
 	fi
