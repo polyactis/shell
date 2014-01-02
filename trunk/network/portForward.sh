@@ -1,7 +1,7 @@
 #!/bin/sh
 if test $# -lt 6
 then
-	echo "Usage: $0 EXT_INTERFACE EXT_IP EXT_PORT INT_INTERFACE INT_IP INT_PORT [PROTOCOL] [CLEARCHAIN] [INTERNAL_NETWORK] [DELETE_CHAIN]"
+	echo "Usage: $0 EXT_INTERFACE EXT_IP EXT_PORT INT_INTERFACE INT_IP INT_PORT [PROTOCOL] [CLEARCHAIN] [INTERNAL_NETWORK] [DELETE_RULE]"
 	echo
 
 	echo "	2010-2-23 script to forward any EXT_IP:EXT_PORT request to INT_IP:INT_PORT"
@@ -11,15 +11,15 @@ then
 	echo "	PROTOCOL is tcp by default."
 	echo "	CLEARCHAIN will not be carried out by default."
 	echo "	INTERNAL_NETWORK is 3-number representation of the network INT_INTERFACE resides in. 10.8.0 by default."
-	echo "	DELETE_CHAIN: 0 or 1, whether to delete every relevant chain, useful for cleanup. Default (0) is -A (add)."
+	echo "	DELETE_RULE: 0 or 1. this controls the iptables command. Default (0) is -A (add). 1: -D (delete rules from chain)."
 	echo
 	echo "Examples:	"
 	echo "	Forward ssh port of 10.0.0.7 to external port 2222. (login internal computer from outside)"
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 2222 tun0 10.0.0.7 22"
-	echo "	Remove all changes made to the iptables for forwarding internal postgresql port to outside."
+	echo "	Instead of adding, instruct iptables to delete all rules related to this setting (forwarding internal postgresql port to outside) , whether it's there all not. Good for targeted cleanup."
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0 1"
-	echo "	Forward internal postgresql port to outside. Clear the PREROUTING and FORWARD chain."
-	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 0 10.113.0"
+	echo "	Clear/flush the PREROUTING and FORWARD chain before forwarding internal postgresql port to outside."
+	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 5432 tun0 10.113.0.7 5432 tcp 1 10.113.0"
 	echo "	Forward port range 40000-45000 of 10.0.0.7 to external same port range."
 	echo "		~/script//shell/portForward.sh eth1 128.125.86.23 40000:45000 tun0 10.0.0.7 40000:45000"
 exit
@@ -55,9 +55,10 @@ fi
 
 CHAIN_OPERATION=-A
 shift
-if test -n "$9"
+DELETE_RULE=$9
+if test -n "$DELETE_RULE"
 then
-	if test $9 == "1"
+	if test $DELETE_RULE == "1"
 	then
 		CHAIN_OPERATION=-D
 	fi
