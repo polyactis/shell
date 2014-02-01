@@ -12,6 +12,7 @@ then
 	echo "	CLEARCHAIN will not be carried out by default."
 	echo "	INTERNAL_NETWORK is 3-number representation of the network INT_INTERFACE resides in. 10.8.0 by default."
 	echo "	DELETE_RULE: 0 or 1. this controls the iptables command. Default (0) is -A (add). 1: -D (delete rules from chain)."
+	echo "	2014.01.31 This script only handles single port ( EXT_PORT, INT_PORT) now. '--match multiport --dports xxx' is disabled because it does not seem to support single-port."
 	echo
 	echo "Examples:	"
 	echo "	Forward ssh port of 10.0.0.7 to external port 2222. (login internal computer from outside)"
@@ -77,34 +78,40 @@ then
 	$IPTABLES -F FORWARD
 fi
 
+#2014.01.31 how to specify destination/source port(s)
+#dportSyntax="--match multiport --dports"	#mutliple ports
+dportSyntax="--dport"	#single port
+#sportSyntax="--match multiport --sports"	#multiple ports
+sportSyntax="--sport"	#single port
+
 # before routing, destination-NAT: translate any request to EXT_IP:EXT_PORT to a request to INT_IP:INT_PORT
 # 2014.01.01 somehow this option is not working well, related to "--sports $INT_PORT". so use the alternative below this.
-#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
-#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP -m multiport --sports $INT_PORT
+#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -j DNAT --to-destination $INT_IP $sportSyntax $INT_PORT
+#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -j DNAT --to-destination $INT_IP $sportSyntax $INT_PORT
 
 ### 2011-8-4 INT_PORT in "--to-destination $INT_IP:$INT_PORT " below uses a different format, port1-port2, rather than port1:port2, to describe a port range.
 #. So opt to use multiport from above to keep consistency.
 ## 2014.01.01 activated this method because somehow method above stopped working.
-echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
-$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
+$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -j DNAT --to-destination $INT_IP:$INT_PORT
 
 # log (not really working)
-#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
-#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP -m multiport --dports $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+#echo $IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
+#$IPTABLES -t nat $CHAIN_OPERATION PREROUTING -i $EXT_INTERFACE -p $PROTOCOL -d $EXT_IP $dportSyntax $EXT_PORT -m limit --limit 1/second -j LOG --log-prefix "pre-route"
 
-#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 #forward external interface to internal interface
-echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP -m multiport --dports $INT_PORT -j ACCEPT
-$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP  -m multiport --dports $INT_PORT  -j ACCEPT
+echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP $dportSyntax $INT_PORT -j ACCEPT
+$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL -d $INT_IP  $dportSyntax $INT_PORT  -j ACCEPT
 
 # log (not working)
-#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
-#$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+#echo $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
+#$IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m limit --limit 1/second -j LOG --log-prefix "forward from ext to internal"
 
 # echo log
-#echo $IPTABLES $CHAIN_OPERATION INPUT -m state --state NEW -p tcp -m multiport --dports 80 -j LOG --log-prefix "NEW_HTTP_CONN:"
+#echo $IPTABLES $CHAIN_OPERATION INPUT -m state --state NEW -p tcp $dportSyntax 80 -j LOG --log-prefix "NEW_HTTP_CONN:"
 
 ### 2011-2-23 make sure INT_IP could find its way back through the tun0 network.
 ### either of the two below works. By SNAT, the source IP becomes part of the network INT_IP is in.
@@ -114,8 +121,8 @@ echo iptables -t nat $CHAIN_OPERATION POSTROUTING -s 0.0.0.0/0 -o $INT_INTERFACE
 iptables -t nat $CHAIN_OPERATION POSTROUTING -s 0.0.0.0/0 -o $INT_INTERFACE -j SNAT -d $INT_IP --to $INTERNAL_NETWORK.50-$INTERNAL_NETWORK.253
 #iptables -t nat -D POSTROUTING -d $INT_IP/32 -o $INT_INTERFACE -j MASQUERADE
 
-# echo $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-# $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP -m multiport --dports $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# echo $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+# $IPTABLES $CHAIN_OPERATION FORWARD -o $EXT_INTERFACE -i $INT_INTERFACE -p $PROTOCOL  -d $INT_IP $dportSyntax $INT_PORT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 ## $IPTABLES $CHAIN_OPERATION FORWARD -i $INT_INTERFACE -o $EXT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
 ## $IPTABLES $CHAIN_OPERATION FORWARD -i $EXT_INTERFACE -o $INT_INTERFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
