@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Which host:"
+echo "Host list: "
 echo "1. ICNNBackup, 128.97.66.147"
 echo "2. vervetNFS 10.47.163.171"
 echo "3. hoffman2"
@@ -21,7 +21,9 @@ echo "e. uclaOffice through temporary 10.47.163.167 "
 echo "f. hoffman2 as namtran"
 echo "g. hoffman2 as charlesb"
 
-ICNN1IP=128.97.66.154
+ICNN1IP=128.97.66.147
+echo "ICNN1 IP is $ICNN1IP".
+echo "Which host:"
 read a
 if [ $a = "1" ]; then
 	ssh 128.97.66.147 -l polyacti
