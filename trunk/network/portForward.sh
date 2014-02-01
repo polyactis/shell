@@ -12,7 +12,7 @@ then
 	echo "	CLEARCHAIN will not be carried out by default."
 	echo "	INTERNAL_NETWORK is 3-number representation of the network INT_INTERFACE resides in. 10.8.0 by default."
 	echo "	DELETE_RULE: 0 or 1. this controls the iptables command. Default (0) is -A (add). 1: -D (delete rules from chain)."
-	echo "	2014.01.31 This script only handles single port ( EXT_PORT, INT_PORT) now. '--match multiport --dports xxx' is disabled because it does not seem to support single-port."
+	echo "	2014.01.31 This script only handles single port ( EXT_PORT, INT_PORT) now. '--match multiport --dports xxx' is replaced by '--dport xxx' because the former does not seem to support single-port."
 	echo
 	echo "Examples:	"
 	echo "	Forward ssh port of 10.0.0.7 to external port 2222. (login internal computer from outside)"
