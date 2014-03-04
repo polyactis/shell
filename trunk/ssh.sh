@@ -1,6 +1,8 @@
 #!/bin/sh
+ICNN1IP=128.97.66.147
+
 echo "Host list: "
-echo "1. ICNNBackup, 128.97.66.147"
+echo "1. ICNNBackup, $ICNN1IP"
 echo "2. vervetNFS 10.47.163.171"
 echo "3. hoffman2"
 echo "4. banyan"
@@ -16,12 +18,11 @@ echo "13. autism server 149.142.126.176"
 echo "a. hpc-login1.usc.edu"
 echo "b. hpc-login2.usc.edu"
 echo "c. vervetNFS 10.47.163.171 through icnn1"
-echo "d. banyan 10.8.0.10 through icnn1"
+echo "d. banyan 10.8.0.6 through icnn1"
 echo "e. uclaOffice through temporary 10.47.163.167 "
 echo "f. hoffman2 as namtran"
 echo "g. hoffman2 as charlesb"
-
-ICNN1IP=128.97.66.147
+echo
 echo "ICNN1 IP is $ICNN1IP".
 echo "Which host:"
 read a
