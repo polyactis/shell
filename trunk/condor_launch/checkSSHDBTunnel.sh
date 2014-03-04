@@ -1,5 +1,7 @@
 #!/bin/bash
 targetHost=crocea.mednet.ucla.edu
+#2014.03.03 use ICNN1 as db server
+targetHost=128.97.66.147
 targetPort=5432
 noOfGrepLines=`ps -ef OT|grep $targetHost:$targetPort|wc -l`
 #ulimit -n 50000 #2013.3.24 no need for these anymore. only one ssh tunnel process per node
