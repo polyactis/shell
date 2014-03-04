@@ -11,6 +11,9 @@ then
 fi
 targetHost=dl324b-1.cmb.usc.edu
 targetHost=crocea.mednet.ucla.edu
+#2014.03.02
+targetHost=128.97.66.147
+
 targetPort=5432	#2012.11.4 for a short time, it was 443.
 echo "ssh -N -f -L 5432:$targetHost:$targetPort polyacti@$tunnelNode"
 ssh -N -L 5432:$targetHost:$targetPort polyacti@$tunnelNode & 
