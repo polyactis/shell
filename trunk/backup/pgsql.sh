@@ -1,6 +1,7 @@
 #!/bin/sh
 date
 backupHostnameDefault=hpc-cmb.usc.edu
+localFolder=/usr/local/src/
 if test $# -lt 1 ; then
 	echo "  $0 dbname [backupHostname] [dbuser]"
 	echo ""
@@ -30,8 +31,8 @@ then
 else
 	dbuserArgument=""
 fi
-pg_dump $dbuserArgument $dbname |gzip >/usr/local/src/zip/$dbname.gz
-scp /usr/local/src/zip/$dbname.gz yuhuang@$host_name:./backup/
-rm /usr/local/src/zip/$dbname.gz
+pg_dump $dbuserArgument $dbname |gzip >$localFolder/$dbname.gz
+scp $localFolder/$dbname.gz yuhuang@$host_name:./backup/
+rm $localFolder/$dbname.gz
 echo -n 'done'
 date
