@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #2012.7.31 increase the max number of processes per user for this shell so that it could spawn lots of condor_shadow
-source ~/.bash_profile
+source ~/.bashrc
 #ulimit -u 50000
 #ulimit -n 50000
 
@@ -58,14 +58,16 @@ memoryRequiredAfterMultiplying=`echo $memoryRequiredInMB*$memoryMultiplier|bc`
 noOfCPUsAfterMultiplying=`echo $noOfCPUs*$cpuNoMultiplier|bc`
 
 # condor folder to use
-CONDOR=condor
+CONDOR_DIR=condor
+
+echo "TOP_DIR is $TOP_DIR"
 
 # this will contain logs/execute/spool
 # 2011-11-26 stop attaching currentUnixTime to LOCAL_DIR. because it makes exporting CONDOR_CONFIG on master node complicated.
 if test "$thisIsSlave" = "0"; then
-	LOCAL_DIR=/work/polyacti/condorM$currentUnixTime
+	LOCAL_DIR=/tmp/condorM$currentUnixTime
 else
-	LOCAL_DIR=/work/polyacti/condorS$currentUnixTime
+	LOCAL_DIR=/tmp/condorS$currentUnixTime
 fi
 
 #clean up the condor conf folder
@@ -79,7 +81,7 @@ mkdir -p $LOCAL_DIR/spool
 # create an env file for easy sourcing
 cat >$LOCAL_DIR/env.sh <<EOF
 #!/bin/bash
-export PATH=$TOP_DIR/$CONDOR/bin:$TOP_DIR/$CONDOR/sbin:$PATH
+export PATH=$TOP_DIR/$CONDOR_DIR/bin:$TOP_DIR/$CONDOR_DIR/sbin:$PATH
 export CONDOR_CONFIG=$LOCAL_DIR/condor_config
 EOF
 
@@ -87,7 +89,7 @@ EOF
 
 # fix the condor config file
 cp $TOP_DIR/condor_config  $LOCAL_DIR/
-perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR:" $LOCAL_DIR/condor_config
+perl -p -i -e "s:^RELEASE_DIR.*:RELEASE_DIR = $TOP_DIR/$CONDOR_DIR:" $LOCAL_DIR/condor_config
 perl -p -i -e "s:^LOCAL_DIR( |\t).*:LOCAL_DIR = $LOCAL_DIR:" $LOCAL_DIR/condor_config
 if test "$thisIsSlave" = "0"; then	#central manager won't have their local config file generated via script (otherwise, script will be run almost every mili-second)
 	$TOP_DIR/makeCondorConfig.sh $noOfCPUs $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber >$LOCAL_DIR/condor_config.local

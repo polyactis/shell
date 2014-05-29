@@ -78,7 +78,8 @@ else
 fi
 echo "# condorCM is $condorCM"
 echo "# centralManagerHostname is $centralManagerHostname."
-machineHostname=`hostname -f`
+#2014.05.08 shorten the hostname
+machineHostname=`hostname -f|cut -f12-`
 thisIsSlave=0
 if [ "x$condorCM" = "x-" ]; then
 	#echo "assuming I'm the new master!"

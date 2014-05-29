@@ -37,7 +37,7 @@ realisticMemoryRequest=`python -c "print min($memoryAvailableInMB, $memoryRequir
 noOfCPUsAfterMultiplying=`echo $noOfCPUs*$cpuNoMultiplier|bc`
 
 # condor folder to use
-CONDOR=condor
+CONDOR_DIR=condor
 
 # this will contain logs/execute/spool
 # 2012.7.31 remove . from the currentUnixTime, or condor_startd name
@@ -83,7 +83,8 @@ echo "CONDOR_HOST=$CONDOR_HOST" >>$localCondorConfigFile
 if test "$thisIsSlave" = "1"
 then
 	#differentiate between different STARTD processes on the same machine
-	machineName=`hostname -f`
+	#2014.05.07 cut out the 1st 12 letters cuz too much boilerplate in the name
+	machineName=`hostname -f|cut -c12-`
 	# 2012.7.31 "." is no longer allowed to be part of STARTD_NAME in condor 7.8. but "_" or "\" is ok.
 	echo "MASTER_NAME=$machineName\_$currentUnixTime" >>$localCondorConfigFile
 	echo "STARTD_NAME=$machineName\_$currentUnixTime" >>$localCondorConfigFile

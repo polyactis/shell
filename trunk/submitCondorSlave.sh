@@ -14,6 +14,7 @@ sshDBTunnelDefault=0
 GLIDEIN_MAX_IDLE_HOURS_DEFAULT=3
 targetHostDefault=crocea.mednet.ucla.edu
 targetPortDefault=5432
+clusterUsername=yhuang2
 
 if test $# -lt 1 ; then
 	echo "  $0 condorCM [noOfCpusPerNode] [noOfCondorSlaves] [noOfHoursToLive] [noOfSleepSeconds] [memoryRequired] [cpuNoMultiplier] [memoryMultiplier] [sshDBTunnel]  [GLIDEIN_MAX_IDLE_HOURS] [cmNumber] [dbHost] [dbPort]"
@@ -77,7 +78,7 @@ if [ -z $memoryRequired ]
 then
 	memoryRequired=$memoryRequiredDefault
 fi
-memoryRequiredInString=$memoryRequired\G
+memoryRequiredInString=$memoryRequired\g
 
 cpuNoMultiplier=$7
 if [ -z $cpuNoMultiplier ]
@@ -128,9 +129,17 @@ then
 fi
 
 slaveScriptFnamePrefix='jobS'
+if test "$thisIsSlave" = "0"; then
+	slaveScriptFnamePrefix='jobM'
+else
+	slaveScriptFnamePrefix='jobS'
+fi
 countCondorSJobs () {
-	echo `qstat -u polyacti|grep $slaveScriptFnamePrefix|wc -l|awk -F ' ' '{print $1}'`
+	echo `qstat -u $clusterUsername|grep $slaveScriptFnamePrefix|wc -l|awk -F ' ' '{print $1}'`
 }
+
+scriptFnamePrefix=/tmp/$slaveScriptFnamePrefix
+
 shellRepositoryPath=`dirname $0`
 reportArguments () {
 	echo "    condorCM=$condorCM"
@@ -153,11 +162,6 @@ reportArguments () {
 
 reportArguments
 
-if test "$thisIsSlave" = "0"; then
-	scriptFnamePrefix=/tmp/jobM
-else
-	scriptFnamePrefix=/tmp/$slaveScriptFnamePrefix
-fi
 #2012.10.25 changed
 #targetHost=dl324b-1.cmb.usc.edu
 #targetHost=crocea.mednet.ucla.edu
@@ -175,59 +179,24 @@ do
 #!/bin/sh
 #$ -S /bin/bash
 #$ -cwd
-#$ -o  ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
+#$ -o ./qjob_output/\$JOB_NAME.joblog.\$JOB_ID
 #$ -j y
-#$ -l h_data=$memoryRequiredInString
-#$ -l h_rt=$noOfHoursToLive:00:00
 #$ -V
+#$ -l h_vmem=$memoryRequiredInString
+#$ -l h_rt=$noOfHoursToLive:00:00
 EOF
 		if test $noOfCpusPerNode -gt 1
 		then
 			#2012.2.28 add "-pe shared* ..." if more than one cpu is needed on one node.
 			cat >>$jobscriptFileName <<EOF
-#$ -pe shared* $noOfCpusPerNode
-EOF
-		fi
-		if test $noOfHoursToLive -gt 24
-		then
-			#2011.12.14 add highp if this would last >24 hours
-			cat >>$jobscriptFileName <<EOF
-#$ -l highp
+#$ -pe threaded $noOfCpusPerNode
 EOF
 		fi
 		cat >>$jobscriptFileName <<EOF
 source ~/.bash_profile
 #exit 0.2 hour earlier than the job exit
-#2012.2.28 tunnel for the vervetdb. #2012.4.16 only when sshDBTunnel=1. pass the variable into the sge script first.
-sshDBTunnel=$sshDBTunnel
-#2012.6.8 a script to check whether ssh tunnel has already been in place on this node. If yes, don't run ssh tunnel.
-if test "\$sshDBTunnel" = "1"; then
-	noOfGrepLines=\`ps -ef OT|grep $targetHost:$targetPort|wc -l\`
-	if test "\$noOfGrepLines" = "1"; then	#not there. grep process will show up in ps -ef OT.
-		ssh -N -L 5432:$targetHost:$targetPort polyacti@login4 & 
-		tunnelProcessID=\$!
-	else
-		tunnelProcessID=0
-	fi
-else
-	tunnelProcessID=0
-fi
+exec ~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
 
-echo tunnelProcessID is \$tunnelProcessID
-
-if test "\$sshDBTunnel" = "1"; then
-	#do not use exec because the ssh tunnel daemon process needs to be killed
-	~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
-else
-	#exec #2013.07.17 temporary suspend it
-	exec ~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
-fi
-
-#2012.10.14 condorCM has to be last because it's usually empty (=getting condorCM from $centralManagerFilename).
-
-if test \$tunnelProcessID -gt 0; then
-	kill -term \$tunnelProcessID
-fi
 EOF
 		qsub $jobscriptFileName
 		#rm $jobscriptFileName
@@ -240,3 +209,39 @@ EOF
 	noOfCondorJobs=`countCondorSJobs`
 	echo $noOfCondorJobs condor jobs now, to reach $noOfCondorSlaves.
 done
+
+#2014.05.29 commented out because it's no longer needed
+##2012.2.28 tunnel for the vervetdb. #2012.4.16 only when sshDBTunnel=1. pass the variable into th
+#e sge script first.
+#sshDBTunnel=$sshDBTunnel
+##2012.6.8 a script to check whether ssh tunnel has already been in place on this node. If yes, do
+#n't run ssh tunnel.
+#if test "\$sshDBTunnel" = "1"; then
+#	noOfGrepLines=\`ps -ef OT|grep $targetHost:$targetPort|wc -l\`
+#	if test "\$noOfGrepLines" = "1"; then   #not there. grep process will show up in ps -ef O
+#T.
+#		ssh -N -L 5432:$targetHost:$targetPort polyacti@login4 & 
+#		tunnelProcessID=\$!
+#	else
+#		tunnelProcessID=0
+#	fi
+#else
+#	tunnelProcessID=0
+#fi
+#
+#echo tunnelProcessID is \$tunnelProcessID
+#
+#if test "\$sshDBTunnel" = "1"; then
+#	#do not use exec because the ssh tunnel daemon process needs to be killed
+#	~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
+#else
+#	#exec #2013.07.17 temporary suspend it
+#	exec ~/script/shell/condor_launch/launch.sh $noOfCpusPerNode $memoryRequired $cpuNoMultiplier $memoryMultiplier $sshDBTunnel $GLIDEIN_MAX_IDLE_HOURS $condorCM $cmNumber $noOfCondorHours.8
+#fi
+#
+##2012.10.14 condorCM has to be last because it's usually empty (=getting condorCM from $centralManagerFilename).
+#
+#if test \$tunnelProcessID -gt 0; then
+#	kill -term \$tunnelProcessID
+#fi
+#
