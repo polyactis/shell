@@ -1,4 +1,3 @@
-#!/bin/sh
 ICNN1IP=128.97.66.147
 
 echo "Host list: "
@@ -102,7 +101,7 @@ if [ $a = "c" ]; then
 	ssh -p 22222 $ICNN1IP -l crocea -X
 fi
 if [ $a = "d" ]; then
-	ssh -p 2222 $ICNN1IP -l crocea -X
+	ssh -p 2222 $ICNN1IP -l yh -X
 fi
 
 if [ $a = "e" ]; then
