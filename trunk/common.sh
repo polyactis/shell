@@ -1,5 +1,29 @@
 #!/bin/bash
 
+#2014.09.02 function to add values to environmental variables, check redundancy first
+## example:
+## 	addValueToEnvironmentalVariable PATH "/usr/local/sbin" 0 
+addValueToEnvironmentalVariable () {
+	variableName=$1
+	value=$2
+	position=$3
+	defaultPosition=-1	#-1: append. 0: prepend
+	if [ "a$position" == "a" ]; then
+		position=$defaultPosition
+	fi
+	# use ${!variableName} to get value of a variable named variableName
+	if [[ "${!variableName}" =~ "$value" ]]; then
+		echo "value: $value already in variable: $variableName."
+	else
+		if [[ $position == 0 ]]; then
+			#without export, bash interprets the whole line as a executable
+			export $variableName=$value:${!variableName}
+		else
+			export $variableName=${!variableName}:$value
+		fi
+	fi
+}
+
 findValueGivenAnOptionName () {
 	if [ -z "$1" ]
 	then
