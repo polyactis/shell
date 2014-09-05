@@ -1,5 +1,29 @@
 #!/bin/bash
 
+#2014.09.05 function to check if a file/folder exists, if it is , return `readlink -f ..` of it
+readlinkIfExistAndExitIfNot () {
+	inputFileOrFolder=$1
+	if test -r $inputFileOrFolder; then
+		echo `readlink -f $inputFileOrFolder`;
+	else
+		echo "Error: $inputFileOrFolder does not exist (or not readable)."
+		exit 1;
+	fi
+}
+
+#2014.09.05
+mkdirhierAndExitIfFail () {
+	outputFolder=$1;
+	if [ ! -d $outputFolder ]; then
+		mkdirhier $outputFolder	#otherwise readlink -f won't work
+		exitCode=$?
+		if [ $exitCode != 0 ]; then
+			echo "mkdirhier $outputFolder failed with exit code $exitCode"
+			exit $exitCode
+		fi
+	fi
+}
+
 #2014.09.02 function to add values to environmental variables, check redundancy first
 ## example:
 ## 	addValueToEnvironmentalVariable PATH "/usr/local/sbin" 0 
