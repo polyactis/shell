@@ -1,5 +1,16 @@
 #!/bin/bash
 
+
+#2014.09.11
+exitIfNonZeroExitCode () {
+	exitCode=$?
+	msg=$1
+	if [ $exitCode != 0 ]; then
+		echo "Error message: $msg"
+		exit $exitCode
+	fi
+}
+
 #2014.09.05 function to check if a file/folder exists, if it is , return `readlink -f ..` of it
 readlinkIfExistAndExitIfNot () {
 	inputFileOrFolder=$1
