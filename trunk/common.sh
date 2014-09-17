@@ -6,6 +6,8 @@ trap "exit 9" TERM
 export TOP_PID=$$
 
 #2014.09.11
+## Example:
+##	exitIfNonZeroExitCode "copy failed."
 exitIfNonZeroExitCode () {
 	exitCode=$?
 	msg=$1
@@ -19,6 +21,8 @@ exitIfNonZeroExitCode () {
 }
 
 #2014.09.05 function to check if a file/folder exists, if it is , return `readlink -f ..` of it
+## Examples
+##	readlinkIfExistAndExitIfNot /usr/local/mydata
 readlinkIfExistAndExitIfNot () {
 	inputFileOrFolder=$1
 	if test -r $inputFileOrFolder; then
