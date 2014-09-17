@@ -1,13 +1,20 @@
 #!/bin/bash
 
+#2014.09.16 pause (flush stderr) and "exit 9 " upon receiving TERM signal
+trap "exit 9" TERM
+# 2014.09.16 used to kill itself to exit the whole program/script ("exit" only exits the function, not the whole script)
+export TOP_PID=$$
 
 #2014.09.11
 exitIfNonZeroExitCode () {
 	exitCode=$?
 	msg=$1
 	if [ $exitCode != 0 ]; then
-		echo "Error message: $msg"
+		echo "Error message: $msg" 1>&2
+		echo "Exit code: $exitCode" 1>&2
+		kill -s TERM $TOP_PID
 		exit $exitCode
+
 	fi
 }
 
@@ -17,7 +24,9 @@ readlinkIfExistAndExitIfNot () {
 	if test -r $inputFileOrFolder; then
 		echo `readlink -f $inputFileOrFolder`;
 	else
-		echo "Error: $inputFileOrFolder does not exist (or not readable)."
+		#pipe stdout to stderr because it's error message
+		echo "Error: $inputFileOrFolder does not exist (or not readable)." 1>&2
+		kill -s TERM $TOP_PID
 		exit 1;
 	fi
 }
@@ -29,7 +38,8 @@ mkdirhierAndExitIfFail () {
 		mkdirhier $outputFolder	#otherwise readlink -f won't work
 		exitCode=$?
 		if [ $exitCode != 0 ]; then
-			echo "mkdirhier $outputFolder failed with exit code $exitCode"
+			echo "mkdirhier $outputFolder failed with exit code $exitCode" 1>&2
+			kill -s TERM $TOP_PID
 			exit $exitCode
 		fi
 	fi
@@ -48,7 +58,7 @@ addValueToEnvironmentalVariable () {
 	fi
 	# use ${!variableName} to get value of a variable named variableName
 	if [[ "${!variableName}" =~ "$value" ]]; then
-		echo "value: $value already in variable: $variableName."
+		echo "value: $value already in variable: $variableName." 1>&2
 	else
 		if [[ $position == 0 ]]; then
 			#without export, bash interprets the whole line as a executable
@@ -62,7 +72,7 @@ addValueToEnvironmentalVariable () {
 findValueGivenAnOptionName () {
 	if [ -z "$1" ]
 	then
-		echo "Option Name is not provided."
+		echo "Option Name is not provided." 1>&2
 		echo ;
 	else
 		optionNamePosition=`echo $arguments|awk -F ' ' '{i=1; while (i<=NF){if ($i=="'$1'") {print i}; ++i}}'`
@@ -116,7 +126,7 @@ outputEmptyVCFWithInputHeader () {
 		fi
 	fi
 	#this echo is to avoid non-zero exit by egrep (nothing matches)
-	echo "empty vcf with header from $vcfInputFname is created."
+	echo "empty vcf with header from $vcfInputFname is created." 1>&2
 }
 
 checkIfFileExists () {
@@ -132,7 +142,7 @@ exitIfFileExists () {
 	fname=$1
 	if test -r $fname
 	then
-		echo "$fname exists. Do not want to append/overwrite it. Check and rename it."
+		echo "$fname exists. Do not want to append/overwrite it. Check and rename it." 1>&2
 		echo 0;
 		exit 2;
 	else
