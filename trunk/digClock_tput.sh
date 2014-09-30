@@ -50,6 +50,6 @@ do
 
  # Delay for 1 second
 
-  sleep 1
+  sleep 3
 
 done
